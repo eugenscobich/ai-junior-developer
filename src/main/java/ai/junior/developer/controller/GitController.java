@@ -3,6 +3,8 @@ package ai.junior.developer.controller;
 import ai.junior.developer.controller.model.ErrorResponse;
 import ai.junior.developer.service.GitService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -37,7 +39,9 @@ public class GitController {
             })
         })
     @PostMapping("/clone")
-    public void cloneRepository(@RequestParam("repoUrl") String repoUrl) throws GitAPIException, IOException {
+    public void cloneRepository(
+        @Parameter(name = "repoUrl", description = "Git repository url") @RequestParam("repoUrl") String repoUrl
+    ) throws GitAPIException, IOException {
         gitService.cloneRepository(repoUrl);
     }
 

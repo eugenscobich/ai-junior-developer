@@ -5,7 +5,8 @@
   "description_for_human": "A backend for handling ChatGPT-like actions with Git capabilities",
   "description_for_model": "Provides endpoints to manage Git operations, read and write files, and more.",
   "auth": {
-    "type": "none"
+    "type": "user_http",
+    "authorization_type": "basic"
   },
   "api": {
     "type": "openapi",

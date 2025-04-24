@@ -1,7 +1,11 @@
 package ai.junior.developer.controller;
 
+import ai.junior.developer.controller.model.ErrorResponse;
 import ai.junior.developer.service.GitService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.io.IOException;
 import lombok.AllArgsConstructor;
@@ -17,14 +21,24 @@ import org.springframework.web.bind.annotation.RestController;
 @AllArgsConstructor
 public class GitController {
 
-
     private final GitService gitService;
 
-    @Operation(summary = "Clone or checkout a Git repository into the workspace")
+    @Operation(
+        operationId = "cloneRepository",
+        summary = "Clone or checkout a Git repository into the workspace",
+        responses = {
+            @ApiResponse(responseCode = "201", description = "Created"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden"),
+            @ApiResponse(responseCode = "404", description = "Not Found"),
+            @ApiResponse(responseCode = "500", description = "Internal Server error", content = {
+                @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
+            })
+        })
     @PostMapping("/clone")
-    public String cloneRepository(@RequestParam("repoUrl") String repoUrl) throws GitAPIException, IOException {
+    public void cloneRepository(@RequestParam("repoUrl") String repoUrl) throws GitAPIException, IOException {
         gitService.cloneRepository(repoUrl);
-        return "Repository cloned successfully";
     }
 
     @Operation(summary = "Add files to Git staging area")

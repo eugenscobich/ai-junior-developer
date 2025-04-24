@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: ai-junior-developer
+  web:
+    resources:
+      add-mappings: true
+
+service:
+  workspace:
+    path: C://Projects/ai-junior-developer-workspace

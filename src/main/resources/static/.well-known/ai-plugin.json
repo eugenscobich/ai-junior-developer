@@ -1,0 +1,17 @@
+{
+  "schema_version": "v1",
+  "name_for_human": "My Custom ChatGPT Backend",
+  "name_for_model": "chatgpt_backend",
+  "description_for_human": "A backend for handling ChatGPT-like actions with Git capabilities",
+  "description_for_model": "Provides endpoints to manage Git operations, read and write files, and more.",
+  "auth": {
+    "type": "none"
+  },
+  "api": {
+    "type": "openapi",
+    "url": "/v3/api-docs"
+  },
+  "logo_url": "https://example.com/logo.png",
+  "contact_email": "support@example.com",
+  "legal_info_url": "https://example.com/legal"
+}

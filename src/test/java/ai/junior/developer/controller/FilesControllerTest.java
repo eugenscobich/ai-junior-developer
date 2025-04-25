@@ -1,72 +1,74 @@
 package ai.junior.developer.controller;
 
 import ai.junior.developer.service.FilesService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.web.servlet.MockMvc;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
+@WebMvcTest(FilesController.class)
 class FilesControllerTest {
 
-    @Mock
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
     private FilesService filesService;
 
-    @InjectMocks
-    private FilesController filesController;
-
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
-
     @Test
-    void testListFiles() throws IOException {
-        List<String> mockFiles = Arrays.asList("file1.txt", "file2.txt");
-        when(filesService.listFiles()).thenReturn(mockFiles);
+    void testListFiles() throws Exception {
+        List<String> files = Arrays.asList("file1.txt", "file2.txt");
+        when(filesService.listFiles()).thenReturn(files);
 
-        List<String> result = filesController.listFiles();
+        mockMvc.perform(get("/api/files/listFiles"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("[file1.txt, file2.txt]"));
 
-        assertEquals(mockFiles, result);
         verify(filesService).listFiles();
     }
 
     @Test
-    void testWriteFile() throws IOException {
-        String path = "test.txt";
-        String content = "Hello World";
+    void testWriteFile() throws Exception {
+        mockMvc.perform(post("/api/files/writeFile")
+                .param("filePath", "test.txt")
+                .param("fileContent", "Hello World"))
+                .andExpect(status().isCreated());
 
-        filesController.writeFile(path, content);
-
-        verify(filesService).writeFile(path, content);
+        verify(filesService).writeFile("test.txt", "Hello World");
     }
 
     @Test
-    void testReadFile() throws IOException {
-        String path = "test.txt";
-        String content = "Hello World";
-        when(filesService.readFile(path)).thenReturn(content);
+    void testReadFile() throws Exception {
+        when(filesService.readFile("test.txt")).thenReturn("Hello World");
 
-        String result = filesController.readFile(path);
+        mockMvc.perform(get("/api/files/readFile")
+                .param("filePath", "test.txt"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Hello World"));
 
-        assertEquals(content, result);
-        verify(filesService).readFile(path);
+        verify(filesService).readFile("test.txt");
     }
 
     @Test
-    void testReplaceInFile() throws IOException {
-        String path = "test.txt";
-        String from = "old";
-        String to = "new";
+    void testReplaceInFile() throws Exception {
+        mockMvc.perform(post("/api/files/replaceInFile")
+                .param("filePath", "test.txt")
+                .param("from", "old")
+                .param("to", "new"))
+                .andExpect(status().isAccepted());
 
-        filesController.replaceInFile(path, from, to);
-
-        verify(filesService).replaceInFile(path, from, to);
+        verify(filesService).replaceInFile("test.txt", "old", "new");
     }
 }

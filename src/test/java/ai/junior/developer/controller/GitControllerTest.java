@@ -2,69 +2,76 @@ package ai.junior.developer.controller;
 
 import ai.junior.developer.service.GitService;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.web.servlet.MockMvc;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 
 import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
+@WebMvcTest(GitController.class)
 class GitControllerTest {
 
-    @Mock
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
     private GitService gitService;
 
-    @InjectMocks
-    private GitController gitController;
+    @Test
+    void testCloneRepository() throws Exception {
+        String url = "https://github.com/example/repo.git";
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
+        mockMvc.perform(post("/api/git/clone")
+                .param("repoUrl", url))
+                .andExpect(status().isCreated());
+
+        verify(gitService).cloneRepository(url);
     }
 
     @Test
-    void testCloneRepository() throws GitAPIException, IOException, URISyntaxException {
-        String repoUrl = "https://github.com/example/repo.git";
+    void testAddFiles() throws Exception {
+        mockMvc.perform(post("/api/git/add")
+                .param("pattern", "*.java"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Files added to staging"));
 
-        gitController.cloneRepository(repoUrl);
-
-        verify(gitService).cloneRepository(repoUrl);
+        verify(gitService).addFiles("*.java");
     }
 
     @Test
-    void testAddFiles() throws GitAPIException, IOException {
-        String pattern = "*.java";
+    void testCommit() throws Exception {
+        mockMvc.perform(post("/api/git/commit")
+                .param("message", "Initial commit"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Changes committed with message: Initial commit"));
 
-        gitController.addFiles(pattern);
-
-        verify(gitService).addFiles(pattern);
+        verify(gitService).commit("Initial commit");
     }
 
     @Test
-    void testCommit() throws GitAPIException, IOException {
-        String message = "Initial commit";
-
-        gitController.commit(message);
-
-        verify(gitService).commit(message);
-    }
-
-    @Test
-    void testPush() throws GitAPIException, IOException {
-        gitController.push();
+    void testPush() throws Exception {
+        mockMvc.perform(post("/api/git/push"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Changes pushed to remote"));
 
         verify(gitService).push();
     }
 
     @Test
-    void testCreateBranch() throws GitAPIException, IOException {
-        String branchName = "feature/test";
+    void testCreateBranch() throws Exception {
+        mockMvc.perform(post("/api/git/branch")
+                .param("branchName", "feature/test"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Branch created and switched to: feature/test"));
 
-        gitController.createBranch(branchName);
-
-        verify(gitService).createBranch(branchName);
+        verify(gitService).createBranch("feature/test");
     }
 }

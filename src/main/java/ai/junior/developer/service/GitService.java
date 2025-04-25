@@ -64,28 +64,25 @@ public class GitService {
         return workspacePath;
     }
 
-    public void addFiles(String project, String pattern) throws IOException, GitAPIException {
+    public void addFiles(String pattern) throws IOException, GitAPIException {
         var workspacePath = getWorkspacePath();
-        var projectPath = workspacePath.resolve(project);
-        try (Git git = Git.open(projectPath.toFile())) {
+        try (Git git = Git.open(workspacePath.toFile())) {
             git.add().addFilepattern(pattern == null ? "." : pattern).call();
             log.info("Files added to staging");
         }
     }
 
-    public void commit(String project, String message) throws IOException, GitAPIException {
+    public void commit(String message) throws IOException, GitAPIException {
         var workspacePath = getWorkspacePath();
-        var projectPath = workspacePath.resolve(project);
-        try (Git git = Git.open(projectPath.toFile())) {
+        try (Git git = Git.open(workspacePath.toFile())) {
             git.commit().setMessage(message).call();
             log.info("Committed with message: {}", message);
         }
     }
 
-    public void push(String project) throws IOException, GitAPIException {
+    public void push() throws IOException, GitAPIException {
         var workspacePath = getWorkspacePath();
-        var projectPath = workspacePath.resolve(project);
-        try (Git git = Git.open(projectPath.toFile())) {
+        try (Git git = Git.open(workspacePath.toFile())) {
             git.push()
                 .setTransportConfigCallback(transport -> {
                     if (transport instanceof SshTransport sshTransport) {
@@ -97,10 +94,9 @@ public class GitService {
         }
     }
 
-    public void createBranch(String project, String branchName) throws IOException, GitAPIException {
+    public void createBranch(String branchName) throws IOException, GitAPIException {
         var workspacePath = getWorkspacePath();
-        var projectPath = workspacePath.resolve(project);
-        try (Git git = Git.open(projectPath.toFile())) {
+        try (Git git = Git.open(workspacePath.toFile())) {
             git.checkout()
                 .setCreateBranch(true)
                 .setName(branchName)

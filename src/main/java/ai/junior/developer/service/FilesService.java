@@ -1,18 +1,17 @@
 package ai.junior.developer.service;
 
 import ai.junior.developer.config.ApplicationPropertiesConfig;
+import ai.junior.developer.exception.AiJuniorDeveloperException;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.transport.SshTransport;
-import org.eclipse.jgit.transport.sshd.SshdSessionFactory;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -22,20 +21,67 @@ public class FilesService {
 
     private final ApplicationPropertiesConfig applicationPropertiesConfig;
 
-    public List<String> listFiles(String project) throws IOException {
+    public List<String> listFiles() throws IOException {
         Path workspacePath = applicationPropertiesConfig.getWorkspace().getPath();
-        var projectPath = workspacePath.resolve(project);
 
         List<String> fileList = new ArrayList<>();
-        if (Files.exists(projectPath)) {
-            try (var paths = Files.walk(projectPath)) {
+        if (Files.exists(workspacePath)) {
+            try (var paths = Files.walk(workspacePath)) {
                 paths
                     .filter(Files::isRegularFile)
-                    .filter(path -> !projectPath.relativize(path).toString().startsWith(".git"))
-                    .filter(path -> !projectPath.relativize(path).toString().startsWith("traget"))
-                    .forEach(path -> fileList.add(projectPath.relativize(path).toString()));
+                    .filter(path -> !workspacePath.relativize(path).toString().startsWith(".git"))
+                    .filter(path -> !workspacePath.relativize(path).toString().startsWith("traget"))
+                    .forEach(path -> fileList.add(workspacePath.relativize(path).toString()));
             }
         }
         return fileList;
+    }
+
+    public String readFile(String filePathStr) throws IOException {
+        var workspacePath = applicationPropertiesConfig.getWorkspace().getPath();
+        var filePath = workspacePath.resolve(filePathStr);
+
+        if (Files.exists(filePath)) {
+            if (!Files.isDirectory(filePath)) {
+                List<String> lines = Files.readAllLines(filePath);
+                return String.join("\n", lines);
+            } else {
+                throw new AiJuniorDeveloperException("Requested file path is a directory. Use listFiles to find the right file path");
+            }
+        } else {
+            throw new AiJuniorDeveloperException("Requested file does not exist. Use listFiles to find the right file path");
+        }
+    }
+
+    public void writeFile(String filePathStr, String fileContent) throws IOException {
+        var workspacePath = applicationPropertiesConfig.getWorkspace().getPath();
+        var filePath = workspacePath.resolve(filePathStr);
+
+        if (!Files.exists(filePath)) {
+            log.info("File already exist, the content will be overridden");
+            Files.createFile(filePath);
+        }
+        Files.writeString(filePath, fileContent);
+    }
+
+    public void replaceInFile(String filePathStr, String from, String to) throws IOException {
+        var workspacePath = applicationPropertiesConfig.getWorkspace().getPath();
+        var filePath = workspacePath.resolve(filePathStr);
+
+
+        if (Files.exists(filePath)) {
+            if (!Files.isDirectory(filePath)) {
+                List<String> lines = Files.readAllLines(filePath);
+                var content =  String.join("\n", lines);
+                var newContent = content.replace(from, to);
+                Files.writeString(filePath, newContent);
+            } else {
+                throw new AiJuniorDeveloperException("Requested file path is a directory. Use listFiles to find the right file path");
+            }
+        } else {
+            throw new AiJuniorDeveloperException("Requested file does not exist. Use listFiles to find the right file path");
+        }
+
+
     }
 }

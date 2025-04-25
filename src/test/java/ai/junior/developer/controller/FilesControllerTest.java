@@ -13,6 +13,7 @@ import java.util.List;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -35,7 +36,7 @@ class FilesControllerTest {
 
         mockMvc.perform(get("/api/files/listFiles"))
                 .andExpect(status().isOk())
-                .andExpect(content().string("[file1.txt, file2.txt]"));
+                .andExpect(content().json("[\"file1.txt\",\"file2.txt\"]"));
 
         verify(filesService).listFiles();
     }
@@ -44,7 +45,8 @@ class FilesControllerTest {
     void testWriteFile() throws Exception {
         mockMvc.perform(post("/api/files/writeFile")
                 .param("filePath", "test.txt")
-                .param("fileContent", "Hello World"))
+                .param("fileContent", "Hello World")
+                .with(csrf()))
                 .andExpect(status().isCreated());
 
         verify(filesService).writeFile("test.txt", "Hello World");
@@ -67,7 +69,8 @@ class FilesControllerTest {
         mockMvc.perform(post("/api/files/replaceInFile")
                 .param("filePath", "test.txt")
                 .param("from", "old")
-                .param("to", "new"))
+                .param("to", "new")
+                .with(csrf()))
                 .andExpect(status().isAccepted());
 
         verify(filesService).replaceInFile("test.txt", "old", "new");

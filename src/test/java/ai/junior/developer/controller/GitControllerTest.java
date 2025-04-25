@@ -9,6 +9,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.Mockito.verify;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -28,7 +29,8 @@ class GitControllerTest {
         String url = "https://github.com/example/repo.git";
 
         mockMvc.perform(post("/api/git/clone")
-                .param("repoUrl", url))
+                .param("repoUrl", url)
+                .with(csrf()))
                 .andExpect(status().isCreated());
 
         verify(gitService).cloneRepository(url);
@@ -37,7 +39,8 @@ class GitControllerTest {
     @Test
     void testAddFiles() throws Exception {
         mockMvc.perform(post("/api/git/add")
-                .param("pattern", "*.java"))
+                .param("pattern", "*.java")
+                .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Files added to staging"));
 
@@ -47,7 +50,8 @@ class GitControllerTest {
     @Test
     void testCommit() throws Exception {
         mockMvc.perform(post("/api/git/commit")
-                .param("message", "Initial commit"))
+                .param("message", "Initial commit")
+                .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Changes committed with message: Initial commit"));
 
@@ -56,7 +60,8 @@ class GitControllerTest {
 
     @Test
     void testPush() throws Exception {
-        mockMvc.perform(post("/api/git/push"))
+        mockMvc.perform(post("/api/git/push")
+                .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Changes pushed to remote"));
 
@@ -66,7 +71,8 @@ class GitControllerTest {
     @Test
     void testCreateBranch() throws Exception {
         mockMvc.perform(post("/api/git/branch")
-                .param("branchName", "feature/test"))
+                .param("branchName", "feature/test")
+                .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Branch created and switched to: feature/test"));
 

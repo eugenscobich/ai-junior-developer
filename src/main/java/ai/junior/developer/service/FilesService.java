@@ -34,6 +34,7 @@ public class FilesService {
                     .forEach(path -> fileList.add(workspacePath.relativize(path).toString()));
             }
         }
+        log.info("Files are returned: {}", fileList);
         return fileList;
     }
 
@@ -44,7 +45,9 @@ public class FilesService {
         if (Files.exists(filePath)) {
             if (!Files.isDirectory(filePath)) {
                 List<String> lines = Files.readAllLines(filePath);
-                return String.join("\n", lines);
+                var content = String.join("\n", lines);
+                log.info("File {} is read", filePathStr);
+                return content;
             } else {
                 throw new AiJuniorDeveloperException("Requested file path is a directory. Use listFiles to find the right file path");
             }
@@ -58,10 +61,16 @@ public class FilesService {
         var filePath = workspacePath.resolve(filePathStr);
 
         if (!Files.exists(filePath)) {
-            log.info("File already exist, the content will be overridden");
+            var parentPath = filePath.getParent();
+            if (!Files.exists(parentPath)) {
+                log.info("Directories are not existing, create them");
+                Files.createDirectories(parentPath);
+            }
+            log.info("File does not exist, create it");
             Files.createFile(filePath);
         }
         Files.writeString(filePath, fileContent);
+        log.info("File {} is written", filePathStr);
     }
 
     public void replaceInFile(String filePathStr, String from, String to) throws IOException {
@@ -75,13 +84,12 @@ public class FilesService {
                 var content =  String.join("\n", lines);
                 var newContent = content.replace(from, to);
                 Files.writeString(filePath, newContent);
+                log.info("File {} is replaced", filePathStr);
             } else {
                 throw new AiJuniorDeveloperException("Requested file path is a directory. Use listFiles to find the right file path");
             }
         } else {
             throw new AiJuniorDeveloperException("Requested file does not exist. Use listFiles to find the right file path");
         }
-
-
     }
 }

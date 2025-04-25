@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import lombok.AllArgsConstructor;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,7 +35,7 @@ public class GitController {
     @PostMapping("/clone")
     public void cloneRepository(
         @Parameter(name = "repoUrl", description = "Git repository url") @RequestParam("repoUrl") String repoUrl
-    ) throws GitAPIException, IOException {
+    ) throws GitAPIException, IOException, URISyntaxException {
         gitService.cloneRepository(repoUrl);
     }
 

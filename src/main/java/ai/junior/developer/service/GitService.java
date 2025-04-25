@@ -2,6 +2,7 @@ package ai.junior.developer.service;
 
 import ai.junior.developer.config.ApplicationPropertiesConfig;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.regex.Pattern;
@@ -10,8 +11,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.transport.SshTransport;
+import org.eclipse.jgit.transport.URIish;
 import org.eclipse.jgit.transport.sshd.SshdSessionFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.util.FileSystemUtils;
 
 @Slf4j
 @Service
@@ -20,23 +23,29 @@ public class GitService {
 
     private final ApplicationPropertiesConfig applicationPropertiesConfig;
 
-    public void cloneRepository(String repoUrl) throws IOException, GitAPIException {
-        var workspacePath = getWorkspacePath();
-        var repoPath = resolveRepoPath(workspacePath, repoUrl);
-
+    public void cloneRepository(String repoUrl) throws IOException, GitAPIException, URISyntaxException {
+        Path workspacePath = applicationPropertiesConfig.getWorkspace().getPath();
+        if (Files.exists(workspacePath)) {
+            FileSystemUtils.deleteRecursively(workspacePath);
+        }
+        Files.createDirectories(workspacePath);
         // Clone
         try (var git = Git.cloneRepository()
             .setURI(repoUrl)
-            .setDirectory(repoPath.toFile())
+            .setDirectory(workspacePath.toFile())
             .setTransportConfigCallback(transport -> {
                 if (transport instanceof SshTransport sshTransport) {
                     sshTransport.setSshSessionFactory(new SshdSessionFactory());
                 }
             })
             .call()) {
-
-            log.info("Cloned repository");
+            git.remoteSetUrl()
+                .setRemoteName("origin")
+                .setRemoteUri(new URIish(repoUrl))
+                .call();
+            log.info("Cloned repository and updated the remote url");
         }
+
     }
 
     private Path resolveRepoPath(Path workspacePath, String repoUrl) throws IOException {

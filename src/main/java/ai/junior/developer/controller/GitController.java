@@ -32,6 +32,7 @@ public class GitController {
             @ApiResponse(responseCode = "403", description = "Forbidden"),
             @ApiResponse(responseCode = "500", description = "Internal Server error")
         })
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/clone")
     public void cloneRepository(
         @Parameter(name = "repoUrl", description = "Git repository url") @RequestParam("repoUrl") String repoUrl

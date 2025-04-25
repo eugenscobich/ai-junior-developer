@@ -53,6 +53,7 @@ public class FilesController {
             @ApiResponse(responseCode = "403", description = "Forbidden"),
             @ApiResponse(responseCode = "500", description = "Internal Server error")
         })
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/writeFile")
     public void writeFile(
         @Parameter(name = "filePath", description = "File path to create and write/override the content") @RequestParam("filePath") String filePath,
@@ -88,6 +89,7 @@ public class FilesController {
             @ApiResponse(responseCode = "403", description = "Forbidden"),
             @ApiResponse(responseCode = "500", description = "Internal Server error")
         })
+    @ResponseStatus(HttpStatus.ACCEPTED)
     @PostMapping("/replaceInFile")
     public void replaceInFile(
         @Parameter(name = "filePath", description = "File path to read") @RequestParam("filePath") String filePath,

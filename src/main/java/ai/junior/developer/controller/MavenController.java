@@ -22,4 +22,10 @@ public class MavenController {
     public String runCleanInstall(@RequestParam String project) {
         return mavenService.runCleanInstall(project);
     }
+
+    @Operation(summary = "Perform action maven test")
+    @GetMapping("/runtests")
+    public String runTests(@RequestParam String project) {
+        return mavenService.runTests(project);
+    }
 }

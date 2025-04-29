@@ -81,11 +81,11 @@ public class GitController {
         return "Pull request created for: " + branchName;
     }
 
-    @Operation(summary = "Get Git pull request number by branch")
+    @Operation(summary = "Get Git pull request number by branch name")
     @GetMapping("/pr/id")
-    public Integer getPullRequestNumberByBranch(@RequestParam String owner, @RequestParam String repo,
+    public Integer getPullRequestNumberByBranchName(@RequestParam String owner, @RequestParam String repo,
                                     @RequestParam String branchName, @RequestParam String apiToken) throws IOException, InterruptedException {
-        return gitService.getPullRequestNumberByBranch(owner, repo, branchName, apiToken);
+        return gitService.getPullRequestNumberByBranchName(owner, repo, branchName, apiToken);
     }
 
     @Operation(summary = "Read comments from Git pull request")

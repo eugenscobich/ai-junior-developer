@@ -157,7 +157,7 @@ public class GitService {
         }
     }
 
-    public Integer getPullRequestNumberByBranch(String owner, String repo, String branchName, String apiToken) throws IOException, InterruptedException {
+    public Integer getPullRequestNumberByBranchName(String owner, String repo, String branchName, String apiToken) throws IOException, InterruptedException {
         var url = "https://api.github.com/repos/" + owner + "/" + repo + "/pulls?head=" + owner + ":" + branchName + "&state=all";
 
         HttpRequest request = HttpRequest.newBuilder()

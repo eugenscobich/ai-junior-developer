@@ -76,7 +76,7 @@ public class GitController {
     @Operation(summary = "Create a new Git pull request")
     @PostMapping("/pr")
     public String createPullRequest(@RequestParam String title, @RequestParam String description) throws IOException, InterruptedException {
-        gitService.createPullRequest(title, description);
+        githubService.createPullRequest(title, description);
         return "Pull request created.";
     }
 
@@ -84,13 +84,13 @@ public class GitController {
     @GetMapping("/pr/id")
     public Integer getPullRequestNumberByBranchName(@RequestParam String owner, @RequestParam String repo,
                                     @RequestParam String branchName, @RequestParam String apiToken) throws IOException, InterruptedException {
-        return gitService.getPullRequestNumberByBranchName(owner, repo, branchName, apiToken);
+        return githubService.getPullRequestNumberByBranchName(owner, repo, branchName, apiToken);
     }
 
     @Operation(summary = "Read comments from Git pull request")
     @GetMapping("/pr/comments")
     public List<String> getComments(@RequestParam String owner, @RequestParam String repo,
                                    @RequestParam Integer pullNumber, @RequestParam String apiToken) throws IOException, InterruptedException {
-        return gitService.getComments(owner, repo, pullNumber, apiToken);
+        return githubService.getComments(owner, repo, pullNumber, apiToken);
     }
 }

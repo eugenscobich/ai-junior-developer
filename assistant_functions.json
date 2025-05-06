@@ -1,0 +1,289 @@
+[
+  {
+    "name": "push",
+    "description": "Push changes to remote repository",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "createPullRequest",
+    "description": "Create a new Git pull request",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "owner": {
+          "type": "string",
+          "description": ""
+        },
+        "repo": {
+          "type": "string",
+          "description": ""
+        },
+        "branchName": {
+          "type": "string",
+          "description": ""
+        },
+        "apiToken": {
+          "type": "string",
+          "description": ""
+        }
+      },
+      "required": [
+        "owner",
+        "repo",
+        "branchName",
+        "apiToken"
+      ]
+    }
+  },
+  {
+    "name": "commit",
+    "description": "Commit changes to Git",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string",
+          "description": ""
+        }
+      },
+      "required": [
+        "message"
+      ]
+    }
+  },
+  {
+    "name": "cloneRepository",
+    "description": "Clone or checkout a Git repository into the workspace",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "repoUrl": {
+          "type": "string",
+          "description": "Git repository url"
+        }
+      },
+      "required": [
+        "repoUrl"
+      ]
+    }
+  },
+  {
+    "name": "createBranch",
+    "description": "Create a new Git branch",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "branchName": {
+          "type": "string",
+          "description": ""
+        }
+      },
+      "required": [
+        "branchName"
+      ]
+    }
+  },
+  {
+    "name": "addFiles",
+    "description": "Add files to Git staging area",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "pattern": {
+          "type": "string",
+          "description": ""
+        }
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "writeFile",
+    "description": "Overwrite a file with the complete content given in one step. You cannot append to a file or write parts or write parts - use replaceInFile for inserting parts",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "filePath": {
+          "type": "string",
+          "description": "File path to create and write/override the content"
+        },
+        "fileContent": {
+          "type": "string",
+          "description": "File content to save"
+        }
+      },
+      "required": [
+        "filePath",
+        "fileContent"
+      ]
+    }
+  },
+  {
+    "name": "replaceInFile",
+    "description": "replaceInFile",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "filePath": {
+          "type": "string",
+          "description": "File path to read"
+        },
+        "from": {
+          "type": "string",
+          "description": "String that need to be replaced"
+        },
+        "to": {
+          "type": "string",
+          "description": "String that will be replaced with"
+        }
+      },
+      "required": [
+        "filePath",
+        "from",
+        "to"
+      ]
+    }
+  },
+  {
+    "name": "getPullRequestNumberByBranchName",
+    "description": "Get Git pull request number by branch name",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "owner": {
+          "type": "string",
+          "description": ""
+        },
+        "repo": {
+          "type": "string",
+          "description": ""
+        },
+        "branchName": {
+          "type": "string",
+          "description": ""
+        },
+        "apiToken": {
+          "type": "string",
+          "description": ""
+        }
+      },
+      "required": [
+        "owner",
+        "repo",
+        "branchName",
+        "apiToken"
+      ]
+    }
+  },
+  {
+    "name": "getComments",
+    "description": "Read comments from Git pull request",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "owner": {
+          "type": "string",
+          "description": ""
+        },
+        "repo": {
+          "type": "string",
+          "description": ""
+        },
+        "pullNumber": {
+          "type": "integer",
+          "description": ""
+        },
+        "apiToken": {
+          "type": "string",
+          "description": ""
+        }
+      },
+      "required": [
+        "owner",
+        "repo",
+        "pullNumber",
+        "apiToken"
+      ]
+    }
+  },
+  {
+    "name": "readFiles",
+    "description": "Read multiple file content",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "filePaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "File paths to read"
+        }
+      },
+      "required": [
+        "filePaths"
+      ]
+    }
+  },
+  {
+    "name": "readFile",
+    "description": "Read file content",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "filePath": {
+          "type": "string",
+          "description": "File path to read"
+        }
+      },
+      "required": [
+        "filePath"
+      ]
+    }
+  },
+  {
+    "name": "listFiles",
+    "description": "List all files in workspace",
+    "parameters": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    }
+  },
+  {
+    "name": "runTests",
+    "description": "Perform action maven test",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": ""
+        }
+      },
+      "required": [
+        "project"
+      ]
+    }
+  },
+  {
+    "name": "runCleanInstall",
+    "description": "Perform action maven clean install",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "project": {
+          "type": "string",
+          "description": ""
+        }
+      },
+      "required": [
+        "project"
+      ]
+    }
+  }
+]

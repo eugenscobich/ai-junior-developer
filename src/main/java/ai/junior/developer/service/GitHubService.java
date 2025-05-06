@@ -44,7 +44,7 @@ public class GitHubService {
         try (Git git = Git.open(workspacePath.toFile())) {
             // Get the remote URL
             String remoteUrl = git.getRepository().getConfig().getString("remote", "origin", "url");
-            //git@github.com:eugenscobich/ai-junior-developer.git
+
             Pattern compile = Pattern.compile("git@(.*):(.*)/(.*).git");
             Matcher matcher = compile.matcher(remoteUrl);
             if (matcher.find()) {
@@ -62,7 +62,8 @@ public class GitHubService {
                     .body(description)
                     .build();
 
-                var response = githubRestTemplate.postForEntity("/repos/" + owner + "/" + repoName + "/pulls", gitHubCreatePullRequestPayload, GitHubCreatePullRequestResponse.class);
+                String url = "/repos/" + owner + "/" + repoName + "/pulls";
+                var response = githubRestTemplate.postForEntity(url, gitHubCreatePullRequestPayload, GitHubCreatePullRequestResponse.class);
 
                 if (response.getStatusCode().value() == 201) {
                     log.info("Pull Request created successfully: {}", response.getBody());

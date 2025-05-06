@@ -1,5 +1,6 @@
 package ai.junior.developer.service;
 
+import ai.junior.developer.assistant.AssistantService;
 import ai.junior.developer.config.ApplicationPropertiesConfig;
 import ai.junior.developer.service.model.JiraCommentsResponse;
 import ai.junior.developer.service.model.JiraCommentsResponse.Comment;
@@ -9,6 +10,8 @@ import ai.junior.developer.service.model.JiraWebhookEvent;
 import ai.junior.developer.service.model.JiraWebhookEvent.Changelog.Item;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.openai.models.beta.threads.Thread;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
@@ -37,8 +40,9 @@ public class JiraService {
     private final ApplicationPropertiesConfig applicationPropertiesConfig;
     private final RestTemplate jiraRestTemplate;
     private final ObjectMapper objectMapper;
+    private final AssistantService assistantService;
 
-    public void webhook(String requestBody) throws JsonProcessingException {
+    public void webhook(String requestBody) throws Exception {
         log.info(requestBody);
         JiraWebhookEvent jiraWebhookEvent = objectMapper.readValue(requestBody, JiraWebhookEvent.class);
 
@@ -48,7 +52,21 @@ public class JiraService {
             if (assignee.isPresent()) {
                 if (assignee.get().getTo() != null && assignee.get().getTo().equals(applicationPropertiesConfig.getJira().getUserId())) {
                     log.info("Ticket was assigned to AI Junior Developer");
-                    addComment(jiraWebhookEvent.getIssue().getKey(), "Ticket was assigned to AI Junior Developer");
+
+                    var assistent = assistantService.findOrCreateAssistant();
+
+                    Thread thread = assistantService.createThread();
+
+                    addComment(jiraWebhookEvent.getIssue().getKey(), "Ticket was assigned to AI Junior Developer. Link: https://platform.openai.com/playground/assistants?assistant=" + assistent.id() + "&thread=" + thread.id());
+
+                    var result = assistantService.executePrompt(
+                        "Title: " + jiraWebhookEvent.getIssue().getKey() + "-" + jiraWebhookEvent.getIssue().getFields().getSummary() + "\n" +
+                            "Description: " + jiraWebhookEvent.getIssue().getFields().getDescription(), assistent.id(), thread.id());
+
+                    addComment(jiraWebhookEvent.getIssue().getKey(), "Assistant responded with: " + result);
+
+                    /*
+
                     List<Comment> comments = getComments(jiraWebhookEvent.getIssue().getKey());
 
                     comments.forEach(c -> {
@@ -61,7 +79,7 @@ public class JiraService {
                                 .collect(Collectors.joining(" "));
                         log.info(comment);
                     });
-
+                    */
                 }
             }
         }

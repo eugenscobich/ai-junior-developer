@@ -42,7 +42,7 @@ public class JiraController {
     )
     @PostMapping("/webhook")
     public void webhook(@RequestBody String requestBody, @RequestHeader("X-Hub-Signature") String xHubSignature)
-        throws NoSuchAlgorithmException, InvalidKeyException, JsonProcessingException {
+        throws Exception {
         jiraService.validateRequest(requestBody, xHubSignature);
         jiraService.webhook(requestBody);
     }

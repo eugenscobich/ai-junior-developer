@@ -21,14 +21,14 @@ public class MavenService {
     private final String MAVEN_PATH = "C:\\apache-maven-3.9.9\\bin\\mvn.cmd";
 
     public String runCleanInstall(String project) {
-        ProcessBuilder processBuilder = new ProcessBuilder("cmd.exe", "/c", MAVEN_PATH, "clean", "install");
+        ProcessBuilder processBuilder = new ProcessBuilder("cmd.exe", "/c", "mvn", "clean", "install");
         StringBuilder logs = startMavenCommand(project, processBuilder);
 
         return logs.toString();
     }
 
     public String runTests(String project) {
-        ProcessBuilder processBuilder = new ProcessBuilder("cmd.exe", "/c", MAVEN_PATH, "test");
+        ProcessBuilder processBuilder = new ProcessBuilder("cmd.exe", "/c", "mvn", "test");
         StringBuilder logs = startMavenCommand(project, processBuilder);
 
         return logs.toString();

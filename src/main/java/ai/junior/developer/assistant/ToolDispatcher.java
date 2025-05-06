@@ -35,6 +35,11 @@ public class ToolDispatcher {
                     yield filesService.readFile(filePath);
                 }
 
+                case "readFiles" -> {
+                    List<String> filePaths = (List<String>) args.get("filePaths");
+                    yield filesService.readFiles(filePaths).toString();
+                }
+
                 case "writeFile" -> {
                     String filePath = (String) args.get("filePath");
                     String content = (String) args.get("fileContent");

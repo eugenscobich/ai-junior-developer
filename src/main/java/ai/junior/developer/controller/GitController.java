@@ -72,26 +72,4 @@ public class GitController {
         gitService.createBranch(branchName);
         return "Branch created and switched to: " + branchName;
     }
-
-    @Operation(summary = "Create a new Git pull request")
-    @PostMapping("/pr")
-    public String createPullRequest(@RequestParam String owner, @RequestParam String repo,
-                                    @RequestParam String branchName, @RequestParam String apiToken) throws IOException, InterruptedException {
-        gitService.createPullRequest(owner, repo, branchName, apiToken);
-        return "Pull request created for: " + branchName;
-    }
-
-    @Operation(summary = "Get Git pull request number by branch name")
-    @GetMapping("/pr/id")
-    public Integer getPullRequestNumberByBranchName(@RequestParam String owner, @RequestParam String repo,
-                                    @RequestParam String branchName, @RequestParam String apiToken) throws IOException, InterruptedException {
-        return gitService.getPullRequestNumberByBranchName(owner, repo, branchName, apiToken);
-    }
-
-    @Operation(summary = "Read comments from Git pull request")
-    @GetMapping("/pr/comments")
-    public List<String> getComments(@RequestParam String owner, @RequestParam String repo,
-                                   @RequestParam Integer pullNumber, @RequestParam String apiToken) throws IOException, InterruptedException {
-        return gitService.getComments(owner, repo, pullNumber, apiToken);
-    }
 }

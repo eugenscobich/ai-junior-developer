@@ -1,17 +1,15 @@
 package ai.junior.developer.assistant;
 
-import ai.junior.developer.controller.FilesController;
-import ai.junior.developer.controller.GitController;
 import ai.junior.developer.service.FilesService;
+import ai.junior.developer.service.GitHubService;
 import ai.junior.developer.service.GitService;
 import ai.junior.developer.service.MavenService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
-
 import java.util.List;
 import java.util.Map;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
@@ -19,13 +17,16 @@ public class ToolDispatcher {
 
     private final MavenService mavenService;
     private final FilesService filesService;
+    private final GitHubService githubService;
     private final GitService gitService;
     private final ObjectMapper mapper = new ObjectMapper();
 
     public String handleToolCall(String functionName, String argsJson) {
         try {
-            Map<String, Object> args = mapper.readValue(argsJson, new TypeReference<>() {
-            });
+            Map<String, Object> args = mapper.readValue(
+                argsJson, new TypeReference<>() {
+                }
+            );
 
             return switch (functionName) {
                 case "listFiles" -> String.join("\n", filesService.listFiles());
@@ -81,31 +82,29 @@ public class ToolDispatcher {
                 }
 
                 case "createPullRequest" -> {
-                    gitService.createPullRequest(
-                            (String) args.get("owner"),
-                            (String) args.get("repo"),
-                            (String) args.get("branchName"),
-                            (String) args.get("apiToken")
+                    githubService.createPullRequest(
+                        (String) args.get("title"),
+                        (String) args.get("description")
                     );
                     yield "Pull request created.";
                 }
 
                 case "getPullRequestNumberByBranchName" -> {
-                    Integer prNumber = gitService.getPullRequestNumberByBranchName(
-                            (String) args.get("owner"),
-                            (String) args.get("repo"),
-                            (String) args.get("branchName"),
-                            (String) args.get("apiToken")
+                    Integer prNumber = githubService.getPullRequestNumberByBranchName(
+                        (String) args.get("owner"),
+                        (String) args.get("repo"),
+                        (String) args.get("branchName"),
+                        (String) args.get("apiToken")
                     );
                     yield "Pull request number: " + prNumber;
                 }
 
                 case "getComments" -> {
-                    List<String> comments = gitService.getComments(
-                            (String) args.get("owner"),
-                            (String) args.get("repo"),
-                            (Integer) args.get("pullNumber"),
-                            (String) args.get("apiToken")
+                    List<String> comments = githubService.getComments(
+                        (String) args.get("owner"),
+                        (String) args.get("repo"),
+                        (Integer) args.get("pullNumber"),
+                        (String) args.get("apiToken")
                     );
                     yield String.join("\n", comments);
                 }

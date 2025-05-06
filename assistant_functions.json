@@ -14,28 +14,18 @@
     "parameters": {
       "type": "object",
       "properties": {
-        "owner": {
+        "title": {
           "type": "string",
-          "description": ""
+          "description": "Pull Request title"
         },
-        "repo": {
+        "description": {
           "type": "string",
-          "description": ""
-        },
-        "branchName": {
-          "type": "string",
-          "description": ""
-        },
-        "apiToken": {
-          "type": "string",
-          "description": ""
+          "description": "Pull Request description"
         }
       },
       "required": [
-        "owner",
-        "repo",
-        "branchName",
-        "apiToken"
+        "title",
+        "description"
       ]
     }
   },
@@ -47,7 +37,7 @@
       "properties": {
         "message": {
           "type": "string",
-          "description": ""
+          "description": "Commit message. It must contains ticket number and commit message"
         }
       },
       "required": [
@@ -79,7 +69,7 @@
       "properties": {
         "branchName": {
           "type": "string",
-          "description": ""
+          "description": "Branch name to create. It must contains ticket number and short description"
         }
       },
       "required": [
@@ -95,7 +85,7 @@
       "properties": {
         "pattern": {
           "type": "string",
-          "description": ""
+          "description": "Pattern used to add files"
         }
       },
       "required": []
@@ -109,7 +99,7 @@
       "properties": {
         "filePath": {
           "type": "string",
-          "description": "File path to create and write/override the content"
+          "description": "File path to create or override the file"
         },
         "fileContent": {
           "type": "string",

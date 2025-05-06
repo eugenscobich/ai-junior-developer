@@ -92,4 +92,25 @@ public class FilesService {
             throw new AiJuniorDeveloperException("Requested file does not exist. Use listFiles to find the right file path");
         }
     }
+
+    public List<String> readFiles(List<String> filePaths) throws IOException {
+        List<String> filesContent = new ArrayList<>();
+        for (String filePath : filePaths) {
+            filesContent.add(readFile(filePath));
+        }
+        return filesContent;
+    }
+
+    public void deleteFile(String filePathStr) throws IOException {
+        var workspacePath = applicationPropertiesConfig.getWorkspace().getPath();
+        var filePath = workspacePath.resolve(filePathStr);
+        Files.delete(filePath);
+        log.info("File {} is deleted", filePathStr);
+    }
+
+    public void deleteFiles(List<String> filePaths) throws IOException {
+        for (String filePath : filePaths) {
+            deleteFile(filePath);
+        }
+    }
 }

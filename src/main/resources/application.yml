@@ -8,3 +8,9 @@ spring:
 service:
   workspace:
     path: C://Projects/ai-junior-developer-workspace
+  jira:
+    webhook-secret: change-me
+    username: eugen.public@gmail.com
+    base-url: https://eugenscobich.atlassian.net/
+    api-token: change-me
+

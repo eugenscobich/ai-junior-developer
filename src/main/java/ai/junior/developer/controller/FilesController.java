@@ -79,6 +79,59 @@ public class FilesController {
     }
 
     @Operation(
+        operationId = "deleteFile",
+        summary = "Delete file",
+        responses = {
+            @ApiResponse(responseCode = "200", description = "OK"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden"),
+            @ApiResponse(responseCode = "500", description = "Internal Server error")
+        })
+    @GetMapping("/deleteFile")
+    public void deleteFile(
+        @Parameter(name = "filePath", description = "File path to delete") @RequestParam("filePath") String filePath
+    ) throws IOException {
+        filesService.deleteFile(filePath);
+    }
+
+    @Operation(
+        operationId = "readFiles",
+        summary = "Read multiple file content",
+        responses = {
+            @ApiResponse(responseCode = "200", description = "OK, List of files content", content = {
+                @Content(mediaType = "text/plain", schema = @Schema(implementation = List.class))
+            }),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden"),
+            @ApiResponse(responseCode = "500", description = "Internal Server error")
+        })
+    @GetMapping("/readFiles")
+    public List<String> readFiles(
+        @Parameter(name = "filePaths", description = "File paths to read") @RequestParam("filePaths") List<String> filePaths
+    ) throws IOException {
+        return filesService.readFiles(filePaths);
+    }
+
+    @Operation(
+        operationId = "deleteFiles",
+        summary = "Delete files",
+        responses = {
+            @ApiResponse(responseCode = "200", description = "OK"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden"),
+            @ApiResponse(responseCode = "500", description = "Internal Server error")
+        })
+    @GetMapping("/deleteFiles")
+    public void deleteFiles(
+        @Parameter(name = "filePaths", description = "File paths to delete") @RequestParam("filePaths") List<String> filePaths
+    ) throws IOException {
+        filesService.deleteFiles(filePaths);
+    }
+
+    @Operation(
         operationId = "replaceInFile",
         summary = "replaceInFile",
         responses = {

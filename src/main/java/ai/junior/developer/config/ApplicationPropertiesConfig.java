@@ -1,5 +1,6 @@
 package ai.junior.developer.config;
 
+import ai.junior.developer.config.model.JiraConfig;
 import ai.junior.developer.config.model.WorkspaceConfig;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,4 +14,7 @@ public class ApplicationPropertiesConfig {
 
     @NestedConfigurationProperty
     private final WorkspaceConfig workspace;
+
+    @NestedConfigurationProperty
+    private final JiraConfig jira;
 }

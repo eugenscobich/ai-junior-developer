@@ -15,5 +15,7 @@ public class JiraConfig {
     @NotBlank
     private String username;
     @NotBlank
+    private String userId;
+    @NotBlank
     private String apiToken;
 }

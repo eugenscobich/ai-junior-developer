@@ -3,6 +3,7 @@ package ai.junior.developer.service;
 import ai.junior.developer.config.ApplicationPropertiesConfig;
 import ai.junior.developer.exception.AiJuniorDeveloperException;
 import ai.junior.developer.service.model.JiraWebhookEvent;
+import ai.junior.developer.service.model.JiraWebhookEvent.Changelog.Item;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,6 +20,7 @@ import java.util.HashMap;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import lombok.AllArgsConstructor;
@@ -42,7 +44,17 @@ public class JiraService {
     public void webhook(String requestBody) throws JsonProcessingException {
         log.info(requestBody);
         JiraWebhookEvent jiraWebhookEvent = objectMapper.readValue(requestBody, JiraWebhookEvent.class);
-        addComment(jiraWebhookEvent.getIssue().getKey(), "Web Hook received");
+
+        if (!jiraWebhookEvent.getChangelog().getItems().isEmpty()) {
+            Optional<Item> assignee = jiraWebhookEvent.getChangelog().getItems().stream().filter(item -> item
+                .getFieldId().equals("assignee")).findFirst();
+            if (assignee.isPresent()) {
+                if (assignee.get().getTo().equals(applicationPropertiesConfig.getJira().getUserId())) {
+                    log.info("Ticket was assigned to AI Junior Developer");
+                    addComment(jiraWebhookEvent.getIssue().getKey(), "Ticket was assigned to AI Junior Developer");
+                }
+            }
+        }
     }
 
     public void validateRequest(String requestBody, String xHubSignature) throws NoSuchAlgorithmException, InvalidKeyException {

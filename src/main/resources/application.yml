@@ -13,4 +13,5 @@ service:
     username: eugen.public@gmail.com
     base-url: https://eugenscobich.atlassian.net/
     api-token: change-me
+    user-id: 712020:89ee716f-8686-4974-89a2-f42027720d71
 

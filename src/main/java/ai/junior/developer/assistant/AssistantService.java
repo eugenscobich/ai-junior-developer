@@ -9,19 +9,14 @@ import com.openai.models.FunctionParameters;
 import com.openai.models.beta.assistants.Assistant;
 import com.openai.models.beta.assistants.AssistantCreateParams;
 import com.openai.models.beta.assistants.AssistantDeleteParams;
-import com.openai.models.beta.threads.messages.MessageCreateParams;
-import com.openai.models.beta.threads.runs.Run;
-import com.openai.models.beta.threads.Thread;
-import com.openai.models.beta.threads.runs.RunCreateParams;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor

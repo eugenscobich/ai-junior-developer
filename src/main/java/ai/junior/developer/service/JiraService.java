@@ -1,26 +1,24 @@
 package ai.junior.developer.service;
 
 import ai.junior.developer.config.ApplicationPropertiesConfig;
-import ai.junior.developer.exception.AiJuniorDeveloperException;
+import ai.junior.developer.service.model.JiraCommentsResponse;
+import ai.junior.developer.service.model.JiraCommentsResponse.Comment;
+import ai.junior.developer.service.model.JiraCommentsResponse.ContentBlock;
+import ai.junior.developer.service.model.JiraCommentsResponse.TextNode;
 import ai.junior.developer.service.model.JiraWebhookEvent;
 import ai.junior.developer.service.model.JiraWebhookEvent.Changelog.Item;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.type.TypeFactory;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import lombok.AllArgsConstructor;
@@ -38,8 +36,7 @@ public class JiraService {
 
     private final ApplicationPropertiesConfig applicationPropertiesConfig;
     private final RestTemplate jiraRestTemplate;
-    private final ObjectMapper  objectMapper;
-
+    private final ObjectMapper objectMapper;
 
     public void webhook(String requestBody) throws JsonProcessingException {
         log.info(requestBody);
@@ -49,9 +46,22 @@ public class JiraService {
             Optional<Item> assignee = jiraWebhookEvent.getChangelog().getItems().stream().filter(item -> item
                 .getFieldId().equals("assignee")).findFirst();
             if (assignee.isPresent()) {
-                if (assignee.get().getTo().equals(applicationPropertiesConfig.getJira().getUserId())) {
+                if (assignee.get().getTo() != null && assignee.get().getTo().equals(applicationPropertiesConfig.getJira().getUserId())) {
                     log.info("Ticket was assigned to AI Junior Developer");
                     addComment(jiraWebhookEvent.getIssue().getKey(), "Ticket was assigned to AI Junior Developer");
+                    List<Comment> comments = getComments(jiraWebhookEvent.getIssue().getKey());
+
+                    comments.forEach(c -> {
+                        String comment =
+                            c.getBody().getContent().stream()
+                                .map(ContentBlock::getContent)
+                                .flatMap(List::stream)
+                                .map(TextNode::getText)
+                                .map(Object::toString)
+                                .collect(Collectors.joining(" "));
+                        log.info(comment);
+                    });
+
                 }
             }
         }
@@ -116,4 +126,51 @@ public class JiraService {
         // Execute POST and ignore the response (URI of the new comment), or capture if needed.
         jiraRestTemplate.postForLocation(url, entity, issueKey);
     }
+
+    /**
+     * Retrieves <strong>all</strong> comments on {@code issueKey} that were authored by the user
+     * whose Atlassian {@code accountId} matches the supplied value.
+     * <p>
+     * Jira’s GET <code>/comment</code> endpoint is paginated, so this method loops until all pages
+     * are fetched.
+     *
+     * @param issueKey issue key, e.g. {@code JKNIG-1}
+     */
+    public List<Comment> getComments(String issueKey) {
+        final int pageSize = 100;
+        int startAt = 0;
+        List<Comment> result = new ArrayList<>();
+
+        while (true) {
+            JiraCommentsResponse page = jiraRestTemplate.getForObject(
+                "/rest/api/3/issue/{issueKey}/comment?startAt={startAt}&maxResults={maxResults}",
+                JiraCommentsResponse.class,
+                issueKey,
+                startAt,
+                pageSize
+            );
+
+            if (page == null) {
+                break; // defensive
+            }
+
+            int total = page.getTotal();
+            var comments = page.getComments();
+            for (var c : comments) {
+                var author = c.getAuthor();
+                if (author != null && applicationPropertiesConfig.getJira().getUserId().equals(author.getAccountId())) {
+                    result.add(c);
+                }
+            }
+
+            // Pagination bookkeeping
+            startAt += comments.size();
+            if (startAt >= total) {
+                break;
+            }
+
+        }
+        return result;
+    }
+
 }

@@ -1,6 +1,8 @@
 package ai.junior.developer.service;
 
 import ai.junior.developer.config.ApplicationPropertiesConfig;
+import ai.junior.developer.service.model.GitHubCreatePullRequestPayload;
+import ai.junior.developer.service.model.GitHubCreatePullRequestResponse;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -11,10 +13,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jgit.api.Git;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 @Slf4j
 @Service
@@ -22,6 +27,7 @@ import org.springframework.stereotype.Service;
 public class GitHubService {
 
     private final ApplicationPropertiesConfig applicationPropertiesConfig;
+    private final RestTemplate githubRestTemplate;
 
     private Path getWorkspacePath() throws IOException {
         // Clean up if workspacePath already exists
@@ -38,45 +44,34 @@ public class GitHubService {
         try (Git git = Git.open(workspacePath.toFile())) {
             // Get the remote URL
             String remoteUrl = git.getRepository().getConfig().getString("remote", "origin", "url");
+            //git@github.com:eugenscobich/ai-junior-developer.git
+            Pattern compile = Pattern.compile("git@(.*):(.*)/(.*).git");
+            Matcher matcher = compile.matcher(remoteUrl);
+            if (matcher.find()) {
 
-            // Extract owner and repo from URL
-            String[] urlParts = remoteUrl.split("/");
-            String owner = urlParts[urlParts.length - 2];
-            String repo = urlParts[urlParts.length - 1].replace(".git", "");
+                String owner = matcher.group(2);
+                String repoName =matcher.group(3);
 
-            // Get the current branch name
-            String head = git.getRepository().getBranch();
+                // Get the current branch name
+                String head = git.getRepository().getBranch();
 
-            // Construct the PR creation API call
-            var apiUrl = "https://api.github.com/repos/" + owner + "/" + repo + "/pulls";
+                GitHubCreatePullRequestPayload gitHubCreatePullRequestPayload = GitHubCreatePullRequestPayload.builder()
+                    .title(title)
+                    .base("main")
+                    .head(head)
+                    .body(description)
+                    .build();
 
-            var json = String.format(
-                """
-                    {
-                      "title": "%s",
-                      "head": "%s",
-                      "base": "main",
-                      "body": "%s"
-                    }
-                    """, title, head, description
-            );
+                var response = githubRestTemplate.postForEntity("/repos/" + owner + "/" + repoName + "/pulls", gitHubCreatePullRequestPayload, GitHubCreatePullRequestResponse.class);
 
-            HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(apiUrl))
-                .header("Authorization", "Bearer " + applicationPropertiesConfig.getGithub().getApiToken())
-                .header("Accept", "application/vnd.github+json")
-                .POST(HttpRequest.BodyPublishers.ofString(json, StandardCharsets.UTF_8))
-                .build();
-
-            HttpClient client = HttpClient.newHttpClient();
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-            if (response.statusCode() == 201) {
-                log.info("Pull Request created successfully: {}", response.body());
-            } else {
-                log.error("Failed to create Pull Request: {} {}", response.statusCode(), response.body());
-                throw new IOException("Failed to create Pull Request: HTTP " + response.statusCode());
+                if (response.getStatusCode().value() == 201) {
+                    log.info("Pull Request created successfully: {}", response.getBody());
+                } else {
+                    log.error("Failed to create Pull Request: {} {}", response.getStatusCode(), response.getBody());
+                    throw new IOException("Failed to create Pull Request: HTTP " + response.getStatusCode());
+                }
             }
+
         }
 
     }

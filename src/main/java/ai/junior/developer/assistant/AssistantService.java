@@ -10,6 +10,7 @@ import com.openai.core.http.QueryParams;
 import com.openai.models.FunctionDefinition;
 import com.openai.models.FunctionParameters;
 import com.openai.models.beta.assistants.Assistant;
+import com.openai.models.beta.assistants.Assistant.Metadata;
 import com.openai.models.beta.assistants.AssistantCreateParams;
 import com.openai.models.beta.assistants.AssistantDeleteParams;
 import com.openai.models.beta.assistants.AssistantListPage;
@@ -94,7 +95,7 @@ public class AssistantService {
                     
                     Role and Behavior
                     - You communicate in a concise, technical, and professional tone.
-                    - You strictly use the provided actions for Git, file, and build operations — never internal tools.
+                    - You strictly use the provided functions for git, file, and build operations — never internal tools.
                     - You follow instructions precisely, validate them for contradictions, and suggest improvements where appropriate.
                     - You follow modern development principles: Clean Code, DRY, KISS, YAGNI, SOLID, TDD, OOP, SoC, POLA. Use functional programming when appropriate and favor stateless, idempotent actions. Avoid code smells. Available Actions (API Mappings)
                     
@@ -160,10 +161,10 @@ public class AssistantService {
                     
                     Important Rules:
                     - Only use the functions listed above — never use internal tools or assumptions such git operations!
-                    - Ask once per session if a required input (e.g., repo URL) is missing.
                     - Follow the execution steps in order without skipping.
                     - Clearly explain actions and results using professional language.
-                    - Continue to proceed in order to full complete the task
+                    - Continue to proceed in order to full complete the task.
+                    - Prefer full file rewrite instead of partial patching.
                     
                     """);
 
@@ -281,6 +282,7 @@ public class AssistantService {
         if (assistant == null) {
             return createAssistant();
         }
+
         return assistant;
     }
 

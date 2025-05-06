@@ -75,10 +75,9 @@ public class GitController {
 
     @Operation(summary = "Create a new Git pull request")
     @PostMapping("/pr")
-    public String createPullRequest(@RequestParam String owner, @RequestParam String repo,
-                                    @RequestParam String branchName, @RequestParam String apiToken) throws IOException, InterruptedException {
-        gitService.createPullRequest(owner, repo, branchName, apiToken);
-        return "Pull request created for: " + branchName;
+    public String createPullRequest(@RequestParam String title, @RequestParam String description) throws IOException, InterruptedException {
+        gitService.createPullRequest(title, description);
+        return "Pull request created.";
     }
 
     @Operation(summary = "Get Git pull request number by branch name")

@@ -1,5 +1,10 @@
 package ai.junior.developer.service;
 
+import static ai.junior.developer.assistant.AssistantContent.ASSISTANT_DESCRIPTION;
+import static ai.junior.developer.assistant.AssistantContent.ASSISTANT_INSTRUCTIONS;
+import static ai.junior.developer.assistant.AssistantContent.ASSISTANT_MODEL;
+import static ai.junior.developer.assistant.AssistantContent.ASSISTANT_NAME;
+
 import ai.junior.developer.assistant.AssistantService;
 import ai.junior.developer.config.ApplicationPropertiesConfig;
 import ai.junior.developer.service.model.JiraCommentsResponse;
@@ -53,7 +58,9 @@ public class JiraService {
                 if (assignee.get().getTo() != null && assignee.get().getTo().equals(applicationPropertiesConfig.getJira().getUserId())) {
                     log.info("Ticket was assigned to AI Junior Developer");
 
-                    var assistent = assistantService.findOrCreateAssistant();
+                    var assistent = assistantService.findOrCreateAssistant(
+                            AssistantService.buildAssistantParams(ASSISTANT_MODEL, ASSISTANT_NAME,
+                                    ASSISTANT_DESCRIPTION, ASSISTANT_INSTRUCTIONS));
 
                     Thread thread = assistantService.createThread();
 

@@ -41,6 +41,20 @@ import org.springframework.web.client.RestTemplate;
 @Service
 @AllArgsConstructor
 public class JiraService {
+    
+    /**
+     * Retrieves detailed information about a specific Jira issue, given its key.
+     *
+     * @param issueKey the unique key identifying the Jira issue, e.g., "JKNIG-1"
+     * @return JSON object containing issue details
+     */
+    public String getIssueDetails(String issueKey) {
+        // URI for Jira issue details
+        String url = "/rest/api/3/issue/" + issueKey;
+
+        // Retrieve issue details as a JSON string
+        return jiraRestTemplate.getForObject(url, String.class);
+    }
 
 
     private final ApplicationPropertiesConfig applicationPropertiesConfig;

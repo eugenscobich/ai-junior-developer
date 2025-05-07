@@ -89,7 +89,7 @@ public class JiraService {
                             ));
 
                     Thread thread = assistantService.createThread();
-                    threadTracker.track(thread.id());
+                    threadTracker.track(assistent.id(), thread.id());
 
 
                         updateFields(issueKey, Map.of(applicationPropertiesConfig.getJira().getTreadIdCustomFieldName(), thread.id()));

@@ -1,5 +1,7 @@
 package ai.junior.developer.service;
 
+import ai.junior.developer.assistant.AssistantService;
+import ai.junior.developer.service.model.PromptRequest;
 import com.openai.client.OpenAIClient;
 import com.openai.models.beta.threads.messages.Message;
 import com.openai.models.beta.threads.messages.MessageListParams;
@@ -20,6 +22,7 @@ import java.util.Map;
 public class ThreadService {
 
     private final OpenAIClient client;
+    private final AssistantService assistantService;
 
     public Map<String, List<Map<String, Object>>> getMessages(String threadId) {
         List<Message> allMessages = client.beta().threads().messages().list(
@@ -33,7 +36,7 @@ public class ThreadService {
                     "content", msg.content().toString(),
                     "created", msg.createdAt()
             );
-            switch (msg.role()) {
+            switch (msg.role().value()) {
                 case USER -> user.add(item);
                 case ASSISTANT -> assistant.add(item);
                 default -> {
@@ -46,5 +49,9 @@ public class ThreadService {
                 "userMessages", user,
                 "assistantMessages", assistant
         );
+    }
+
+    public String sendPromptToExistingThread(PromptRequest request) throws Exception {
+        return assistantService.executePrompt(request.getPrompt(), request.getAssistantId(), request.getThreadId());
     }
 }

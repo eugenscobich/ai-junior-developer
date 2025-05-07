@@ -9,13 +9,15 @@ import java.util.Map;
 
 @Component
 public class ThreadTracker {
-    private final List<String> threadIds = new ArrayList<>();
+    private final Map<String, List<String>> threadsByAssistant = new HashMap<>();
 
-    public synchronized void track(String threadId) {
-        threadIds.add(threadId);
+    public synchronized void track(String assistantId, String threadId) {
+        threadsByAssistant
+                .computeIfAbsent(assistantId, k -> new ArrayList<>())
+                .add(threadId);
     }
 
-    public synchronized List<String> getThreads() {
-        return new ArrayList<>(threadIds);
+    public synchronized Map<String, List<String>> getAllTracked() {
+        return threadsByAssistant;
     }
 }

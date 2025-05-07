@@ -18,4 +18,9 @@ public class JiraConfig {
     private String userId;
     @NotBlank
     private String apiToken;
+    @NotBlank
+    private String treadIdCustomFieldName;
+    @NotBlank
+    private String componentCustomFieldName;
+
 }

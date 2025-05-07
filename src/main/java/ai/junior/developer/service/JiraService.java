@@ -55,7 +55,8 @@ public class JiraService {
             Optional<Item> assignee = jiraWebhookEvent.getChangelog().getItems().stream().filter(item -> item
                 .getFieldId().equals("assignee")).findFirst();
             if (assignee.isPresent()) {
-                if (assignee.get().getTo() != null && assignee.get().getTo().equals(applicationPropertiesConfig.getJira().getUserId())) {
+                if (assignee.get().getTo() != null && assignee.get().getTo().equals(applicationPropertiesConfig.getJira().getUserId())
+                && jiraWebhookEvent.getIssue().getFields().getCustomfield_10059() == null) {
                     log.info("Ticket was assigned to AI Junior Developer");
 
                     var assistent = assistantService.findOrCreateAssistant(
@@ -64,13 +65,16 @@ public class JiraService {
 
                     Thread thread = assistantService.createThread();
 
-                    addComment(jiraWebhookEvent.getIssue().getKey(), "Ticket was assigned to AI Junior Developer. Link: https://platform.openai.com/playground/assistants?assistant=" + assistent.id() + "&thread=" + thread.id());
+                    String issueKey = jiraWebhookEvent.getIssue().getKey();
+                    updateTicketFields(issueKey, Map.of(applicationPropertiesConfig.getJira().getTreadIdCustomFieldName(), thread.id()));
+
+                    addComment(issueKey, "Ticket was assigned to AI Junior Developer. Link: https://platform.openai.com/playground/assistants?assistant=" + assistent.id() + "&thread=" + thread.id());
 
                     var result = assistantService.executePrompt(
-                        "Title: " + jiraWebhookEvent.getIssue().getKey() + "-" + jiraWebhookEvent.getIssue().getFields().getSummary() + "\n" +
+                        "Title: " + issueKey + "-" + jiraWebhookEvent.getIssue().getFields().getSummary() + "\n" +
                             "Description: " + jiraWebhookEvent.getIssue().getFields().getDescription(), assistent.id(), thread.id());
 
-                    addComment(jiraWebhookEvent.getIssue().getKey(), "Assistant responded with: " + result);
+                    addComment(issueKey, "Assistant responded with: " + result);
 
                     /*
 
@@ -196,6 +200,32 @@ public class JiraService {
 
         }
         return result;
+    }
+
+
+
+    /**
+     * Updates a field or a set of fields on a Jira ticket.
+     *
+     * @param issueKey the key of the issue, e.g. <code>"PROJ-123"</code>
+     * @param fields key-value pairs representing field names and their new values
+     */
+    public void updateTicketFields(String issueKey, Map<String, Object> fields) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(Map.of("fields", fields), headers);
+
+        // Jira Cloud REST v3 endpoint for issue update
+        String url = "/rest/api/3/issue/" + issueKey;
+
+        // Execute PUT request
+        try {
+            jiraRestTemplate.put(url, entity);
+            log.info("Updated fields {} for issue {}", fields.keySet(), issueKey);
+        } catch (Exception e) {
+            log.error("Failed to update fields {} for issue {}", fields.keySet(), issueKey, e);
+        }
     }
 
 }

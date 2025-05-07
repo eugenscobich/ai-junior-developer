@@ -82,6 +82,10 @@ public class JiraWebhookEvent {
             private String customField10019;
             @JsonProperty("customfield_10021")
             private Object customField10021;
+            @JsonProperty("customfield_10059")
+            private Object customfield_10059;
+            @JsonProperty("customfield_10058")
+            private Object customfield_10058;
             private String description;
             private String duedate;
             private String environment;

@@ -14,6 +14,8 @@ service:
     base-url: https://eugenscobich.atlassian.net/
     api-token: change-me
     user-id: 712020:89ee716f-8686-4974-89a2-f42027720d71
+    tread-id-custom-field-name: customfield_10059
+    component-custom-field-name: customfield_10058
   github:
     api-token: change-me
 

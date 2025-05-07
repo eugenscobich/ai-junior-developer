@@ -6,6 +6,7 @@ import static ai.junior.developer.assistant.AssistantContent.ASSISTANT_MODEL;
 import static ai.junior.developer.assistant.AssistantContent.ASSISTANT_NAME;
 
 import ai.junior.developer.assistant.AssistantService;
+import ai.junior.developer.assistant.ThreadTracker;
 import ai.junior.developer.config.ApplicationPropertiesConfig;
 import ai.junior.developer.service.model.JiraCommentsResponse;
 import ai.junior.developer.service.model.JiraCommentsResponse.Comment;
@@ -42,7 +43,7 @@ import org.springframework.web.client.RestTemplate;
 @Service
 @AllArgsConstructor
 public class JiraService {
-    
+
     /**
      * Retrieves detailed information about a specific Jira issue, given its key.
      *
@@ -63,6 +64,8 @@ public class JiraService {
     private final RestTemplate jiraRestTemplate;
     private final ObjectMapper objectMapper;
     private final AssistantService assistantService;
+    private final ThreadTracker threadTracker;
+
     public void webhook(String requestBody) throws Exception {
         log.info(requestBody);
         JiraWebhookEvent jiraWebhookEvent = objectMapper.readValue(requestBody, JiraWebhookEvent.class);
@@ -85,7 +88,8 @@ public class JiraService {
                                 ASSISTANT_DESCRIPTION, ASSISTANT_INSTRUCTIONS
                             ));
 
-                        Thread thread = assistantService.createThread();
+                    Thread thread = assistantService.createThread();
+                    threadTracker.track(thread.id());
 
 
                         updateFields(issueKey, Map.of(applicationPropertiesConfig.getJira().getTreadIdCustomFieldName(), thread.id()));

@@ -42,6 +42,30 @@ import org.springframework.web.client.RestTemplate;
 @AllArgsConstructor
 public class JiraService {
 
+    /**
+     * Updates fields of the given Jira issue.
+     *
+     * @param issueKey the key of the issue, e.g. <code>"PROJ-123"</code>
+     * @param fields map of fields and their new values
+     */
+    public void updateFields(String issueKey, Map<String, Object> fields) {
+        // Payload creation
+        Map<String, Object> payload = Map.of("fields", fields);
+
+        // Prepare HTTP request
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(payload, headers);
+
+        // Jira Cloud REST v3 endpoint for issue updates
+        String url = "/rest/api/3/issue/{issueKey}";
+
+        // Execute PUT request and ignore the response
+        jiraRestTemplate.put(url, entity, issueKey);
+    }
+
+
     private final ApplicationPropertiesConfig applicationPropertiesConfig;
     private final RestTemplate jiraRestTemplate;
     private final ObjectMapper objectMapper;

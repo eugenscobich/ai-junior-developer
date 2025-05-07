@@ -233,6 +233,7 @@ public class JiraWebhookEvent {
     /**
      * Top-level object that represents a Jira comment.
      */
+    @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Comment {
 
@@ -251,51 +252,14 @@ public class JiraWebhookEvent {
 
         private String updated;
 
-        // ── getters & setters ──────────────────────────────────────────────────────
-        public Author getAuthor()             { return author; }
-        public void   setAuthor(Author author){ this.author = author; }
-
-        public String getBody()               { return body; }
-        public void   setBody(String body)    { this.body = body; }
-
-        public String getCreated()            { return created; }
-        public void   setCreated(String created) { this.created = created; }
-
-        public String getId()                 { return id; }
-        public void   setId(String id)        { this.id = id; }
-
-        public Boolean getJsdPublic()         { return jsdPublic; }
-        public void    setJsdPublic(Boolean jsdPublic){ this.jsdPublic = jsdPublic; }
-
-        public String getSelf()               { return self; }
-        public void   setSelf(String self)    { this.self = self; }
-
-        public Author getUpdateAuthor()       { return updateAuthor; }
-        public void   setUpdateAuthor(Author updateAuthor){ this.updateAuthor = updateAuthor; }
-
-        public String getUpdated()            { return updated; }
-        public void   setUpdated(String updated){ this.updated = updated; }
-
-        @Override
-        public String toString() {
-            return "Comment{" +
-                "author=" + author +
-                ", body='" + body + '\'' +
-                ", created='" + created + '\'' +
-                ", id='" + id + '\'' +
-                ", jsdPublic=" + jsdPublic +
-                ", self='" + self + '\'' +
-                ", updateAuthor=" + updateAuthor +
-                ", updated='" + updated + '\'' +
-                '}';
-        }
     }
 
     /**
      * Re-usable structure for both "author" and "updateAuthor".
      */
+    @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
-    class Author {
+    public static class Author {
 
         private String accountId;
         private String accountType;
@@ -308,48 +272,15 @@ public class JiraWebhookEvent {
         private String self;
         private String timeZone;
 
-        // ── getters & setters ──────────────────────────────────────────────────────
-        public String getAccountId()              { return accountId; }
-        public void   setAccountId(String accountId){ this.accountId = accountId; }
-
-        public String getAccountType()            { return accountType; }
-        public void   setAccountType(String accountType){ this.accountType = accountType; }
-
-        public boolean isActive()                 { return active; }
-        public void    setActive(boolean active)  { this.active = active; }
-
-        public AvatarUrls getAvatarUrls()         { return avatarUrls; }
-        public void      setAvatarUrls(AvatarUrls avatarUrls){ this.avatarUrls = avatarUrls; }
-
-        public String getDisplayName()            { return displayName; }
-        public void   setDisplayName(String displayName){ this.displayName = displayName; }
-
-        public String getSelf()                   { return self; }
-        public void   setSelf(String self)        { this.self = self; }
-
-        public String getTimeZone()               { return timeZone; }
-        public void   setTimeZone(String timeZone){ this.timeZone = timeZone; }
-
-        @Override
-        public String toString() {
-            return "Author{" +
-                "accountId='" + accountId + '\'' +
-                ", accountType='" + accountType + '\'' +
-                ", active=" + active +
-                ", avatarUrls=" + avatarUrls +
-                ", displayName='" + displayName + '\'' +
-                ", self='" + self + '\'' +
-                ", timeZone='" + timeZone + '\'' +
-                '}';
-        }
     }
 
     /**
      * Holds the different avatar sizes.
      * Property names starting with digits are mapped via @JsonProperty.
      */
+    @Data
     @JsonIgnoreProperties(ignoreUnknown = true)
-    class AvatarUrls {
+    public static class AvatarUrls {
 
         @JsonProperty("16x16")
         private String size16x16;
@@ -363,28 +294,6 @@ public class JiraWebhookEvent {
         @JsonProperty("48x48")
         private String size48x48;
 
-        // ── getters & setters ──────────────────────────────────────────────────────
-        public String getSize16x16()              { return size16x16; }
-        public void   setSize16x16(String url)    { this.size16x16 = url; }
-
-        public String getSize24x24()              { return size24x24; }
-        public void   setSize24x24(String url)    { this.size24x24 = url; }
-
-        public String getSize32x32()              { return size32x32; }
-        public void   setSize32x32(String url)    { this.size32x32 = url; }
-
-        public String getSize48x48()              { return size48x48; }
-        public void   setSize48x48(String url)    { this.size48x48 = url; }
-
-        @Override
-        public String toString() {
-            return "AvatarUrls{" +
-                "size16x16='" + size16x16 + '\'' +
-                ", size24x24='" + size24x24 + '\'' +
-                ", size32x32='" + size32x32 + '\'' +
-                ", size48x48='" + size48x48 + '\'' +
-                '}';
-        }
     }
 
 }

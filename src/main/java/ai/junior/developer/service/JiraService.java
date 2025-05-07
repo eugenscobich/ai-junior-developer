@@ -13,6 +13,7 @@ import ai.junior.developer.service.model.JiraCommentsResponse.ContentBlock;
 import ai.junior.developer.service.model.JiraCommentsResponse.TextNode;
 import ai.junior.developer.service.model.JiraWebhookEvent;
 import ai.junior.developer.service.model.JiraWebhookEvent.Changelog.Item;
+import ai.junior.developer.service.model.JiraWebhookEvent.Issue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openai.models.beta.threads.Thread;
@@ -48,12 +49,12 @@ public class JiraService {
      * @param issueKey the unique key identifying the Jira issue, e.g., "JKNIG-1"
      * @return JSON object containing issue details
      */
-    public String getIssueDetails(String issueKey) {
+    public Issue getIssueDetails(String issueKey) {
         // URI for Jira issue details
         String url = "/rest/api/3/issue/" + issueKey;
 
         // Retrieve issue details as a JSON string
-        return jiraRestTemplate.getForObject(url, String.class);
+        return jiraRestTemplate.getForObject(url, Issue.class);
     }
 
 
@@ -65,6 +66,9 @@ public class JiraService {
     public void webhook(String requestBody) throws Exception {
         log.info(requestBody);
         JiraWebhookEvent jiraWebhookEvent = objectMapper.readValue(requestBody, JiraWebhookEvent.class);
+        String issueKey = jiraWebhookEvent.getIssue().getKey();
+
+        var issueDetails = getIssueDetails(issueKey);
 
         if (jiraWebhookEvent.getWebhookEvent().equals("jira:issue_updated")) {
             if (jiraWebhookEvent.getChangelog() != null && !jiraWebhookEvent.getChangelog().getItems().isEmpty()) {
@@ -83,7 +87,7 @@ public class JiraService {
 
                         Thread thread = assistantService.createThread();
 
-                        String issueKey = jiraWebhookEvent.getIssue().getKey();
+
                         updateFields(issueKey, Map.of(applicationPropertiesConfig.getJira().getTreadIdCustomFieldName(), thread.id()));
 
                         addComment(issueKey,
@@ -117,8 +121,7 @@ public class JiraService {
                 }
             }
         } else if (jiraWebhookEvent.getWebhookEvent().equals("comment_updated")) {
-
-
+            log.info("Comment is added to ticket that have trace id {}", issueDetails.getFields().getCustomfield_10059());
         }
     }
 

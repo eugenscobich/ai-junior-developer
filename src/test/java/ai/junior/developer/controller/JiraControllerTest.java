@@ -6,32 +6,27 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.mockito.Mockito.doNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@WebMvcTest(JiraController.class)
 class JiraControllerTest {
 
+    @Autowired
     private MockMvc mockMvc;
 
-    @Mock
+    @MockBean
     private JiraService jiraService;
-
-    @InjectMocks
-    private JiraController jiraController;
-
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-        mockMvc = MockMvcBuilders.standaloneSetup(jiraController).build();
-    }
 
     @Test
     void shouldHandleWebhook() throws Exception {
-        String requestBody = "{"eventType":"issue_created"}";
+        String requestBody = "{\"eventType\":\"issue_created\"}";
         String xHubSignature = "signature";
 
         doNothing().when(jiraService).validateRequest(requestBody, xHubSignature);

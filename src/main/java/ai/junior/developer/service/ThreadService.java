@@ -5,9 +5,11 @@ import ai.junior.developer.service.model.PromptRequest;
 import com.openai.client.OpenAIClient;
 import com.openai.models.beta.threads.messages.Message;
 import com.openai.models.beta.threads.messages.MessageListParams;
+import com.openai.models.beta.threads.messages.Text;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import com.openai.models.beta.threads.messages.TextContentBlock;
 
 import static com.openai.models.beta.threads.messages.Message.Role.Value.ASSISTANT;
 import static com.openai.models.beta.threads.messages.Message.Role.Value.USER;
@@ -15,6 +17,7 @@ import static com.openai.models.beta.threads.messages.Message.Role.Value.USER;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -32,8 +35,15 @@ public class ThreadService {
         List<Map<String, Object>> assistant = new ArrayList<>();
 
         for (Message msg : allMessages) {
+            String value = msg.content().stream()
+                    .map(c -> c.text()
+                            .map(TextContentBlock::text)
+                            .map(Text::value)
+                            .orElse("[empty]"))
+                    .collect(Collectors.joining("\n"));
+
             Map<String, Object> item = Map.of(
-                    "content", msg.content().toString(),
+                    "content", value,
                     "created", msg.createdAt()
             );
             switch (msg.role().value()) {
@@ -52,6 +62,8 @@ public class ThreadService {
     }
 
     public String sendPromptToExistingThread(PromptRequest request) throws Exception {
+        System.out.println(request);
+
         return assistantService.executePrompt(request.getPrompt(), request.getAssistantId(), request.getThreadId());
     }
 }

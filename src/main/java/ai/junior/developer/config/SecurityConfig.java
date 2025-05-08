@@ -1,7 +1,10 @@
 package ai.junior.developer.config;
 
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.userdetails.User;
@@ -26,11 +29,11 @@ public class SecurityConfig {
                 auth.requestMatchers("/api/jira/webhook").permitAll(); // allow home page
                 auth.anyRequest().authenticated(); // all other requests require authentication
             })
-            .httpBasic(Customizer.withDefaults());
+                .cors(Customizer.withDefaults())
+                .httpBasic(Customizer.withDefaults());
 
         return http.build();
     }
-
 
     @Bean
     public UserDetailsService userDetailsService() {

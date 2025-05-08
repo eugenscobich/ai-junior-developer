@@ -4,6 +4,7 @@ import ai.junior.developer.service.FilesService;
 import ai.junior.developer.service.GitHubService;
 import ai.junior.developer.service.GitService;
 import ai.junior.developer.service.MavenService;
+import ai.junior.developer.service.RunService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
@@ -15,7 +16,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ToolDispatcher {
 
-    private final MavenService mavenService;
+    private final RunService runService;
     private final FilesService filesService;
     private final GitHubService githubService;
     private final GitService gitService;
@@ -89,29 +90,7 @@ public class ToolDispatcher {
                     yield "Pull request created.";
                 }
 
-                case "getPullRequestNumberByBranchName" -> {
-                    Integer prNumber = githubService.getPullRequestNumberByBranchName(
-                        (String) args.get("owner"),
-                        (String) args.get("repo"),
-                        (String) args.get("branchName"),
-                        (String) args.get("apiToken")
-                    );
-                    yield "Pull request number: " + prNumber;
-                }
-
-                case "getComments" -> {
-                    List<String> comments = githubService.getComments(
-                        (String) args.get("owner"),
-                        (String) args.get("repo"),
-                        (Integer) args.get("pullNumber"),
-                        (String) args.get("apiToken")
-                    );
-                    yield String.join("\n", comments);
-                }
-
-                case "runCleanInstall" -> mavenService.runCleanInstall((String) args.get("project"));
-
-                case "runTests" -> mavenService.runTests((String) args.get("project"));
+                case "run" -> runService.run((String) args.get("command"));
 
                 default -> "Unknown function: " + functionName;
             };

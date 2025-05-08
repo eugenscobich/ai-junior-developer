@@ -40,13 +40,13 @@ public class AssistantContent {
             - Add/Delete or modify  files in order to complete requested task. 
             - Do all changes in a single run. 
             8. Run command
-            - Use run to execute command. Use all required commands to build the project.
+            - Use run function to execute command. Use all required commands to build the project.
             - If the build fails, check returned logs.
             - Identify the cause of failure from the logs.
             - Try to correct issues.
             - Repeat run command until the build succeeds.
             9. Add or update CHANGELOG.md file
-            - Add or update CHANGELOG.md with summery of changes.
+            - Add or update CHANGELOG.md with summary of changes.
             10. Stage changes
             - Use addFiles function to add modified files in git staging.
             11. Commit changes

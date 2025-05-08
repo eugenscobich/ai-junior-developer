@@ -13,7 +13,6 @@ import ai.junior.developer.service.model.JiraCommentsResponse.Comment;
 import ai.junior.developer.service.model.JiraIssue;
 import ai.junior.developer.service.model.JiraWebhookEvent;
 import ai.junior.developer.service.model.JiraWebhookEvent.Changelog.Item;
-import ai.junior.developer.service.model.JiraWebhookEvent.Issue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openai.models.beta.threads.Thread;
@@ -25,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -41,8 +41,6 @@ import org.springframework.web.client.RestTemplate;
 @AllArgsConstructor
 public class JiraService {
 
-
-
     private final ApplicationPropertiesConfig applicationPropertiesConfig;
 
     private final RestTemplate jiraRestTemplate;
@@ -57,7 +55,11 @@ public class JiraService {
 
         var issueDetails = getIssueDetails(issueKey);
         var threadId = issueDetails.getFields().getExtras().get(applicationPropertiesConfig.getJira().getTreadIdCustomFieldName());
-
+        var assistant = assistantService.findOrCreateAssistant(
+            AssistantService.buildAssistantParams(
+                ASSISTANT_MODEL, ASSISTANT_NAME,
+                ASSISTANT_DESCRIPTION, ASSISTANT_INSTRUCTIONS
+            ));
         if (jiraWebhookEvent.getWebhookEvent().equals("jira:issue_updated")) {
             if (jiraWebhookEvent.getChangelog() != null && !jiraWebhookEvent.getChangelog().getItems().isEmpty()) {
                 Optional<Item> assignee = jiraWebhookEvent.getChangelog().getItems().stream().filter(item -> item
@@ -67,12 +69,6 @@ public class JiraService {
                     if (assignee.get().getTo() != null && assignee.get().getTo().equals(applicationPropertiesConfig.getJira().getUserId())
                         && threadId == null) {
                         log.info("Ticket was assigned to AI Junior Developer");
-
-                        var assistant = assistantService.findOrCreateAssistant(
-                            AssistantService.buildAssistantParams(
-                                ASSISTANT_MODEL, ASSISTANT_NAME,
-                                ASSISTANT_DESCRIPTION, ASSISTANT_INSTRUCTIONS
-                            ));
 
                         Thread thread = assistantService.createThread();
                         threadTracker.track(assistant.id(), thread.id());
@@ -110,8 +106,16 @@ public class JiraService {
                     }
                 }
             }
-        } else if (jiraWebhookEvent.getWebhookEvent().equals("comment_updated")) {
+        } else if (jiraWebhookEvent.getWebhookEvent().equals("comment_updated") || jiraWebhookEvent.getWebhookEvent().equals("comment_created")) {
             log.info("Comment is added to ticket that have trace id {}", threadId);
+            if (threadId != null && !Objects.equals(
+                jiraWebhookEvent.getComment().getAuthor().getAccountId(),
+                applicationPropertiesConfig.getJira().getUserId()
+            )) {
+                var result = assistantService.executePrompt(jiraWebhookEvent.getComment().getBody(), assistant.id(), threadId.toString());
+                addComment(issueKey, result);
+            }
+
         }
     }
 

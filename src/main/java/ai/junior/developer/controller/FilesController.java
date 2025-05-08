@@ -10,6 +10,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.io.IOException;
 import java.util.List;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -54,11 +56,12 @@ public class FilesController {
             @ApiResponse(responseCode = "500", description = "Internal Server error")
         })
     @PostMapping("/writeFile")
-    public void writeFile(
+    public ResponseEntity<Void> writeFile(
         @Parameter(name = "filePath", description = "File path to create and write/override the content") @RequestParam("filePath") String filePath,
         @Parameter(name = "fileContent", description = "File content to save") @RequestParam("fileContent") String fileContent
     ) throws IOException {
         filesService.writeFile(filePath, fileContent);
+return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @Operation(

@@ -185,20 +185,24 @@
   {
     "name": "deleteFile",
     "description": "Delete a file in workspace",
-    "properties": {
-      "filePath": {
-        "type": "string",
-        "description": "File path to delete"
-      }
-    },
-    "required": [
-      "filePath"
-    ]
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "filePath": {
+          "type": "string",
+          "description": "File path to delete"
+        }
+      },
+      "required": [
+        "filePath"
+      ]
+    }
   },
   {
     "name": "deleteFiles",
     "description": "Delete  files in workspace",
-    "properties": {
+    "parameters": {
+      "type": "object",
       "properties": {
         "filePaths": {
           "type": "array",

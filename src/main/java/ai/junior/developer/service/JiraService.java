@@ -10,9 +10,11 @@ import ai.junior.developer.assistant.ThreadTracker;
 import ai.junior.developer.config.ApplicationPropertiesConfig;
 import ai.junior.developer.service.model.JiraCommentsResponse;
 import ai.junior.developer.service.model.JiraCommentsResponse.Comment;
+import ai.junior.developer.service.model.JiraIssue;
 import ai.junior.developer.service.model.JiraWebhookEvent;
 import ai.junior.developer.service.model.JiraWebhookEvent.Changelog.Item;
 import ai.junior.developer.service.model.JiraWebhookEvent.Issue;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openai.models.beta.threads.Thread;
 import java.nio.charset.StandardCharsets;
@@ -39,19 +41,7 @@ import org.springframework.web.client.RestTemplate;
 @AllArgsConstructor
 public class JiraService {
 
-    /**
-     * Retrieves detailed information about a specific Jira issue, given its key.
-     *
-     * @param issueKey the unique key identifying the Jira issue, e.g., "JKNIG-1"
-     * @return JSON object containing issue details
-     */
-    public Issue getIssueDetails(String issueKey) {
-        // URI for Jira issue details
-        String url = "/rest/api/3/issue/" + issueKey;
 
-        // Retrieve issue details as a JSON string
-        return jiraRestTemplate.getForObject(url, Issue.class);
-    }
 
     private final ApplicationPropertiesConfig applicationPropertiesConfig;
 
@@ -66,14 +56,16 @@ public class JiraService {
         String issueKey = jiraWebhookEvent.getIssue().getKey();
 
         var issueDetails = getIssueDetails(issueKey);
+        var threadId = issueDetails.getFields().getExtras().get(applicationPropertiesConfig.getJira().getTreadIdCustomFieldName());
 
         if (jiraWebhookEvent.getWebhookEvent().equals("jira:issue_updated")) {
             if (jiraWebhookEvent.getChangelog() != null && !jiraWebhookEvent.getChangelog().getItems().isEmpty()) {
                 Optional<Item> assignee = jiraWebhookEvent.getChangelog().getItems().stream().filter(item -> item
                     .getFieldId().equals("assignee")).findFirst();
                 if (assignee.isPresent()) {
+
                     if (assignee.get().getTo() != null && assignee.get().getTo().equals(applicationPropertiesConfig.getJira().getUserId())
-                        && issueDetails.getFields().getCustomfield_10059() == null) {
+                        && threadId == null) {
                         log.info("Ticket was assigned to AI Junior Developer");
 
                         var assistant = assistantService.findOrCreateAssistant(
@@ -119,7 +111,7 @@ public class JiraService {
                 }
             }
         } else if (jiraWebhookEvent.getWebhookEvent().equals("comment_updated")) {
-            log.info("Comment is added to ticket that have trace id {}", issueDetails.getFields().getCustomfield_10059());
+            log.info("Comment is added to ticket that have trace id {}", threadId);
         }
     }
 
@@ -252,4 +244,19 @@ public class JiraService {
         return result;
     }
 
+    /**
+     * Retrieves detailed information about a specific Jira issue, given its key.
+     *
+     * @param issueKey the unique key identifying the Jira issue, e.g., "JKNIG-1"
+     * @return JSON object containing issue details
+     */
+    public JiraIssue getIssueDetails(String issueKey) throws JsonProcessingException {
+        // URI for Jira issue details
+        String url = "/rest/api/3/issue/" + issueKey;
+
+        // Retrieve issue details as a JSON string
+        var forObject = jiraRestTemplate.getForEntity(url, String.class);
+        log.info(forObject.getBody());
+        return objectMapper.readValue(forObject.getBody(), JiraIssue.class);
+    }
 }

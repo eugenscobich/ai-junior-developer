@@ -10,7 +10,7 @@
   },
   {
     "name": "createPullRequest",
-    "description": "Create a new Git pull request",
+    "description": "Create a git pull request",
     "parameters": {
       "type": "object",
       "properties": {
@@ -31,7 +31,7 @@
   },
   {
     "name": "commit",
-    "description": "Commit changes to Git",
+    "description": "Commit changes to git",
     "parameters": {
       "type": "object",
       "properties": {
@@ -47,7 +47,7 @@
   },
   {
     "name": "cloneRepository",
-    "description": "Clone or checkout a Git repository into the workspace",
+    "description": "Clone or checkout a git repository into the workspace",
     "parameters": {
       "type": "object",
       "properties": {
@@ -63,7 +63,7 @@
   },
   {
     "name": "createBranch",
-    "description": "Create a new Git branch",
+    "description": "Create a new git branch",
     "parameters": {
       "type": "object",
       "properties": {
@@ -79,7 +79,7 @@
   },
   {
     "name": "addFiles",
-    "description": "Add files to Git staging area",
+    "description": "Add files to git staging area",
     "parameters": {
       "type": "object",
       "properties": {
@@ -139,68 +139,6 @@
     }
   },
   {
-    "name": "getPullRequestNumberByBranchName",
-    "description": "Get Git pull request number by branch name",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "owner": {
-          "type": "string",
-          "description": ""
-        },
-        "repo": {
-          "type": "string",
-          "description": ""
-        },
-        "branchName": {
-          "type": "string",
-          "description": ""
-        },
-        "apiToken": {
-          "type": "string",
-          "description": ""
-        }
-      },
-      "required": [
-        "owner",
-        "repo",
-        "branchName",
-        "apiToken"
-      ]
-    }
-  },
-  {
-    "name": "getComments",
-    "description": "Read comments from Git pull request",
-    "parameters": {
-      "type": "object",
-      "properties": {
-        "owner": {
-          "type": "string",
-          "description": ""
-        },
-        "repo": {
-          "type": "string",
-          "description": ""
-        },
-        "pullNumber": {
-          "type": "integer",
-          "description": ""
-        },
-        "apiToken": {
-          "type": "string",
-          "description": ""
-        }
-      },
-      "required": [
-        "owner",
-        "repo",
-        "pullNumber",
-        "apiToken"
-      ]
-    }
-  },
-  {
     "name": "readFiles",
     "description": "Read multiple file content",
     "parameters": {
@@ -245,34 +183,49 @@
     }
   },
   {
-    "name": "runTests",
-    "description": "Perform action maven test",
-    "parameters": {
-      "type": "object",
+    "name": "deleteFile",
+    "description": "Delete a file in workspace",
+    "properties": {
+      "filePath": {
+        "type": "string",
+        "description": "File path to delete"
+      }
+    },
+    "required": [
+      "filePath"
+    ]
+  },
+  {
+    "name": "deleteFiles",
+    "description": "Delete  files in workspace",
+    "properties": {
       "properties": {
-        "project": {
-          "type": "string",
-          "description": ""
+        "filePaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "File paths to delete"
         }
       },
       "required": [
-        "project"
+        "filePaths"
       ]
     }
   },
   {
-    "name": "runCleanInstall",
-    "description": "Perform action maven clean install",
+    "name": "run",
+    "description": "Perform action to run local command in order to detect build issues",
     "parameters": {
       "type": "object",
       "properties": {
-        "project": {
+        "command": {
           "type": "string",
-          "description": ""
+          "description": "Command line instruction"
         }
       },
       "required": [
-        "project"
+        "command"
       ]
     }
   }

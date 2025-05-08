@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Git Operations", description = "Endpoints to manage Git repository in workspace")
@@ -37,10 +39,11 @@ public class GitController {
             @ApiResponse(responseCode = "500", description = "Internal Server error")
         })
     @PostMapping("/clone")
-    public void cloneRepository(
+    public ResponseEntity<Void> cloneRepository(
         @Parameter(name = "repoUrl", description = "Git repository url") @RequestParam("repoUrl") String repoUrl
     ) throws GitAPIException, IOException, URISyntaxException {
         gitService.cloneRepository(repoUrl);
+ return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @Operation(summary = "Add files to Git staging area")

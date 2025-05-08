@@ -1,23 +1,16 @@
 package ai.junior.developer.assistant;
 
-import static ai.junior.developer.assistant.AssistantContent.ASSISTANT_DESCRIPTION;
-import static ai.junior.developer.assistant.AssistantContent.ASSISTANT_INSTRUCTIONS;
-import static ai.junior.developer.assistant.AssistantContent.ASSISTANT_MODEL;
-import static ai.junior.developer.assistant.AssistantContent.ASSISTANT_NAME;
 import static com.openai.models.beta.threads.messages.Message.Role.Value.ASSISTANT;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openai.client.OpenAIClient;
 import com.openai.core.JsonValue;
-import com.openai.core.http.QueryParams;
 import com.openai.models.FunctionDefinition;
 import com.openai.models.FunctionParameters;
 import com.openai.models.beta.assistants.Assistant;
 import com.openai.models.beta.assistants.AssistantCreateParams;
 import com.openai.models.beta.assistants.AssistantDeleteParams;
-import com.openai.models.beta.assistants.AssistantListPage;
-import com.openai.models.beta.assistants.AssistantListParams;
 import com.openai.models.beta.threads.Thread;
 import com.openai.models.beta.threads.messages.Message;
 import com.openai.models.beta.threads.messages.MessageContent;
@@ -31,7 +24,6 @@ import com.openai.models.beta.threads.runs.RunCreateParams;
 import com.openai.models.beta.threads.runs.RunRetrieveParams;
 import com.openai.models.beta.threads.runs.RunStatus;
 import com.openai.models.beta.threads.runs.RunSubmitToolOutputsParams;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -42,11 +34,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

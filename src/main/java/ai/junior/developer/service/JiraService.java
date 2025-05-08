@@ -10,15 +10,11 @@ import ai.junior.developer.assistant.ThreadTracker;
 import ai.junior.developer.config.ApplicationPropertiesConfig;
 import ai.junior.developer.service.model.JiraCommentsResponse;
 import ai.junior.developer.service.model.JiraCommentsResponse.Comment;
-import ai.junior.developer.service.model.JiraCommentsResponse.ContentBlock;
-import ai.junior.developer.service.model.JiraCommentsResponse.TextNode;
 import ai.junior.developer.service.model.JiraWebhookEvent;
 import ai.junior.developer.service.model.JiraWebhookEvent.Changelog.Item;
 import ai.junior.developer.service.model.JiraWebhookEvent.Issue;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openai.models.beta.threads.Thread;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
@@ -28,7 +24,6 @@ import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import lombok.AllArgsConstructor;
@@ -58,7 +53,6 @@ public class JiraService {
         return jiraRestTemplate.getForObject(url, Issue.class);
     }
 
-
     private final ApplicationPropertiesConfig applicationPropertiesConfig;
 
     private final RestTemplate jiraRestTemplate;
@@ -79,32 +73,32 @@ public class JiraService {
                     .getFieldId().equals("assignee")).findFirst();
                 if (assignee.isPresent()) {
                     if (assignee.get().getTo() != null && assignee.get().getTo().equals(applicationPropertiesConfig.getJira().getUserId())
-                        && jiraWebhookEvent.getIssue().getFields().getCustomfield_10059() == null) {
+                        && issueDetails.getFields().getCustomfield_10059() == null) {
                         log.info("Ticket was assigned to AI Junior Developer");
 
-                        var assistent = assistantService.findOrCreateAssistant(
+                        var assistant = assistantService.findOrCreateAssistant(
                             AssistantService.buildAssistantParams(
                                 ASSISTANT_MODEL, ASSISTANT_NAME,
                                 ASSISTANT_DESCRIPTION, ASSISTANT_INSTRUCTIONS
                             ));
 
-                    Thread thread = assistantService.createThread();
-                    threadTracker.track(assistent.id(), thread.id());
-
+                        Thread thread = assistantService.createThread();
+                        threadTracker.track(assistant.id(), thread.id());
 
                         updateFields(issueKey, Map.of(applicationPropertiesConfig.getJira().getTreadIdCustomFieldName(), thread.id()));
 
-                        addComment(issueKey,
+                        addComment(
+                            issueKey,
                             "Ticket was assigned to AI Junior Developer. Link: https://platform.openai.com/playground/assistants?assistant="
-                                + assistent.id() + "&thread=" + thread.id()
+                                + assistant.id() + "&thread=" + thread.id()
                         );
 
                         var result = assistantService.executePrompt(
                             "Title: " + issueKey + "-" + jiraWebhookEvent.getIssue().getFields().getSummary() + "\n" +
-                                "Description: " + jiraWebhookEvent.getIssue().getFields().getDescription(), assistent.id(), thread.id()
+                                "Description: " + jiraWebhookEvent.getIssue().getFields().getDescription(), assistant.id(), thread.id()
                         );
 
-                        addComment(issueKey, "Assistant responded with: " + result);
+                        addComment(issueKey, result);
 
                     /*
 
@@ -133,7 +127,7 @@ public class JiraService {
      * Updates fields of the given Jira issue.
      *
      * @param issueKey the key of the issue, e.g. <code>"PROJ-123"</code>
-     * @param fields map of fields and their new values
+     * @param fields   map of fields and their new values
      */
     public void updateFields(String issueKey, Map<String, Object> fields) {
         // Payload creation

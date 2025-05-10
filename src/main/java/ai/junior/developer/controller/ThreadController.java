@@ -2,6 +2,7 @@ package ai.junior.developer.controller;
 
 import ai.junior.developer.assistant.ThreadTracker;
 import ai.junior.developer.service.ThreadService;
+import ai.junior.developer.service.model.MessagesResponse;
 import ai.junior.developer.service.model.PromptRequest;
 import ai.junior.developer.service.model.ThreadsResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -31,7 +32,7 @@ public class ThreadController {
     }
 
     @GetMapping("/api/messages/{threadId}")
-    public ResponseEntity<Map<String, Object>> getMessages(@PathVariable String threadId) {
+    public ResponseEntity<MessagesResponse> getMessages(@PathVariable String threadId) {
         var messages = threadService.getMessages(threadId);
         return ResponseEntity.ok(messages);
     }

@@ -2,14 +2,18 @@ package ai.junior.developer.service;
 
 import ai.junior.developer.assistant.AssistantService;
 import ai.junior.developer.assistant.ThreadTracker;
+import ai.junior.developer.service.model.MessageResponse;
+import ai.junior.developer.service.model.MessagesResponse;
 import ai.junior.developer.service.model.PromptRequest;
 import ai.junior.developer.service.model.ThreadsResponse;
+import ai.junior.developer.service.model.UserOrAssistantMessageResponse;
 import com.openai.client.OpenAIClient;
 import com.openai.models.beta.threads.Thread;
 import com.openai.models.beta.threads.messages.Message;
 import com.openai.models.beta.threads.messages.MessageListParams;
 import com.openai.models.beta.threads.messages.Text;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import com.openai.models.beta.threads.messages.TextContentBlock;
@@ -22,7 +26,11 @@ import static com.openai.models.beta.threads.messages.Message.Role.Value.ASSISTA
 import static com.openai.models.beta.threads.messages.Message.Role.Value.USER;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -50,12 +58,15 @@ public class ThreadService {
         return tracked;
     }
 
-    public Map<String, Object> getMessages(String threadId) {
+    public MessagesResponse getMessages(String threadId) {
         List<Message> allMessages = client.beta().threads().messages().list(
                 MessageListParams.builder().threadId(threadId).build()).data();
 
-        Map<String, Object> userMessage = null;
-        List<Map<String, Object>> assistantMessages = new ArrayList<>();
+        allMessages.sort(Comparator.comparing(Message::createdAt));
+        log.info("allMessages: {}", allMessages);
+
+        Map<String, MessageResponse> groupedMessages = new LinkedHashMap<>();
+        String currentUserMessageId = null;
 
         for (Message msg : allMessages) {
             String value = msg.content().stream()
@@ -65,27 +76,36 @@ public class ThreadService {
                             .orElse("[empty]"))
                     .collect(Collectors.joining("\n"));
 
-            Map<String, Object> item = Map.of(
-                    "content", value,
-                    "created", msg.createdAt()
-            );
+            UserOrAssistantMessageResponse messageDto = UserOrAssistantMessageResponse.builder()
+                    .value(value)
+                    .createdAt(msg.createdAt())
+                    .build();
+
             switch (msg.role().value()) {
-                case USER -> userMessage = item;
-                case ASSISTANT -> assistantMessages.add(item);
+                case USER -> {
+                    currentUserMessageId = msg.id();
+                    MessageResponse response = MessageResponse.builder()
+                            .userMessage(messageDto)
+                            .assistantMessages(new ArrayList<>())
+                            .build();
+                    groupedMessages.put(currentUserMessageId, response);
+                }
+                case ASSISTANT -> {
+                    if (currentUserMessageId != null) {
+                        groupedMessages.get(currentUserMessageId).getAssistantMessages().add(messageDto);
+                    } else {
+                        log.warn("no user message before: {}", msg);
+                    }
+                }
                 default -> {
                     log.warn("Unhandled role: {}", msg.role());
                 }
             }
         }
 
-        if (userMessage != null) {
-            return Map.of(
-                    "userMessages", userMessage,
-                    "assistantMessages", assistantMessages
-            );
-        } else {
-            return Collections.emptyMap();
-        }
+        return MessagesResponse.builder()
+                .messagesList(new ArrayList<>(groupedMessages.values()))
+                .build();
     }
 
     public String sendPromptToExistingThread(PromptRequest request) throws Exception {

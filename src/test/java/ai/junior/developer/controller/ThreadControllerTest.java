@@ -3,15 +3,12 @@ package ai.junior.developer.controller;
 import ai.junior.developer.service.ThreadService;
 import ai.junior.developer.service.model.MessagesResponse;
 import ai.junior.developer.service.model.ThreadsResponse;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.List;
 
@@ -20,21 +17,15 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@WebMvcTest(ThreadController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class ThreadControllerTest {
 
+    @Autowired
     private MockMvc mockMvc;
 
-    @Mock
+    @MockBean
     private ThreadService threadService;
-
-    @InjectMocks
-    private ThreadController threadController;
-
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-        this.mockMvc = MockMvcBuilders.standaloneSetup(threadController).build();
-    }
 
     @Test
     void testGetThreads() throws Exception {
@@ -43,7 +34,7 @@ class ThreadControllerTest {
 
         mockMvc.perform(get("/api/threads"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+                .andExpect(content().contentType("application/json"));
     }
 
     @Test
@@ -53,6 +44,6 @@ class ThreadControllerTest {
 
         mockMvc.perform(get("/api/messages/123"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+                .andExpect(content().contentType("application/json"));
     }
 }

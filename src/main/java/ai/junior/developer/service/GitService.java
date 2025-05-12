@@ -60,7 +60,7 @@ public class GitService {
         var workspacePath = getWorkspacePath();
         try (Git git = Git.open(workspacePath.toFile())) {
             git.add().addFilepattern(pattern == null ? "." : pattern).call();
-            log.info("Files added to staging");
+            log.info("Files added to staging using the pattern {}", pattern);
         }
     }
 

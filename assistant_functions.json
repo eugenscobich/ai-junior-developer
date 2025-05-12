@@ -79,13 +79,13 @@
   },
   {
     "name": "addFiles",
-    "description": "Add files to git staging area",
+    "description": "Add files to git staging area. Add a path to a file/directory whose content should be added. A directory name (e.g. dir to add dir/file1 and dir/file2) can also be given to add all files in the directory, recursively. Fileglobs (e.g. *.c) are not yet supported.",
     "parameters": {
       "type": "object",
       "properties": {
         "pattern": {
           "type": "string",
-          "description": "Pattern used to add files"
+          "description": "Pattern used to add files. List each file individual or the directory path."
         }
       },
       "required": []
@@ -218,7 +218,7 @@
     }
   },
   {
-    "name": "run",
+    "name": "runLocalCommand",
     "description": "Perform action to run local command in order to detect build issues",
     "parameters": {
       "type": "object",

@@ -5,6 +5,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +19,7 @@ public class RunService {
     private final ApplicationPropertiesConfig applicationPropertiesConfig;
 
     public String run(String command) throws IOException, InterruptedException {
-        var args = Arrays.asList(command.split(" "));
+        var args = new ArrayList<String>(Arrays.asList(command.split(" ")));
         args.addFirst("/c");
         args.addFirst("powershell.exe");
         ProcessBuilder processBuilder = new ProcessBuilder(args);

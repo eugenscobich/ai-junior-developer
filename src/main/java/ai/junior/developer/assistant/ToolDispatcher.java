@@ -10,8 +10,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class ToolDispatcher {
@@ -90,11 +92,12 @@ public class ToolDispatcher {
                     yield "Pull request created.";
                 }
 
-                case "run" -> runService.run((String) args.get("command"));
+                case "runLocalCommand" -> runService.run((String) args.get("command"));
 
                 default -> "Unknown function: " + functionName;
             };
         } catch (Exception e) {
+            log.error(e.getMessage(), e);
             return "Error executing function " + functionName + ": " + e.getMessage();
         }
     }

@@ -89,7 +89,7 @@ public class AssistantService {
 
         AssistantCreateParams params = builder.build();
         Assistant assistant = client.beta().assistants().create(params);
-        log.info("AssistantId:" + assistant.id());
+        log.info("Assistant is created with Id:" + assistant.id());
         return assistant;
     }
 

@@ -2,6 +2,7 @@ package ai.junior.developer.controller;
 
 import ai.junior.developer.assistant.ThreadTracker;
 import ai.junior.developer.service.ThreadService;
+import ai.junior.developer.service.model.MessagesResponse;
 import ai.junior.developer.service.model.PromptRequest;
 import ai.junior.developer.service.model.ThreadsResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -15,30 +16,23 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Tag(name = "Control existing thread", description = "Expose thread id and messages from thread.")
 @RestController
 @AllArgsConstructor
 public class ThreadController {
 
-    private final ThreadTracker threadTracker;
     private final ThreadService threadService;
 
     @GetMapping("/api/threads")
-    public ResponseEntity<ThreadsResponse> getThreads() {
-        Map<String, List<String>> activeThread= threadTracker.getAllTracked();
-        List<ThreadsResponse> tracked = activeThread.entrySet().stream()
-                .filter(entry -> !entry.getValue().isEmpty())
-                .map(entry -> ThreadsResponse.builder()
-                        .assistantId(entry.getKey())
-                        .threadId(entry.getValue().get(0))
-                        .build())
-                .toList();
-        return ResponseEntity.ok(tracked.getFirst());
+    public ResponseEntity<ThreadsResponse> getThreads() throws Exception {
+        ThreadsResponse tracked = threadService.getThreads();
+        return ResponseEntity.ok(tracked);
     }
 
     @GetMapping("/api/messages/{threadId}")
-    public ResponseEntity<Map<String, List<Map<String, Object>>>> getMessages(@PathVariable String threadId) {
+    public ResponseEntity<MessagesResponse> getMessages(@PathVariable String threadId) {
         var messages = threadService.getMessages(threadId);
         return ResponseEntity.ok(messages);
     }

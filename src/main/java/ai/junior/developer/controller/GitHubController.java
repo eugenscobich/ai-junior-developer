@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "Git Operations", description = "Endpoints to manage Git repository in workspace")
+@Tag(name = "GitHub Operations", description = "Endpoints to manage Git repository in workspace")
 @RestController
 @RequestMapping("/api/github")
 @AllArgsConstructor

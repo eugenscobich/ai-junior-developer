@@ -77,8 +77,7 @@ public class JiraService {
 
                         addComment(
                             issueKey,
-                            "Ticket was assigned to AI Junior Developer. Link: https://platform.openai.com/playground/assistants?assistant="
-                                + assistant.id() + "&thread=" + thread.id()
+                            "Ticket was assigned to AI Junior Developer. Link: http://localhost:3000/" + thread.id() + "/messages"
                         );
 
                         var result = assistantService.executePrompt(

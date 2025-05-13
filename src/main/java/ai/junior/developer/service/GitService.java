@@ -10,6 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand.ResetType;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.transport.PushResult;
+import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.SshTransport;
 import org.eclipse.jgit.transport.URIish;
 import org.eclipse.jgit.transport.sshd.SshdSessionFactory;
@@ -76,14 +78,18 @@ public class GitService {
     public void push() throws IOException, GitAPIException {
         var workspacePath = getWorkspacePath();
         try (Git git = Git.open(workspacePath.toFile())) {
-            git.push()
+            String branch = git.getRepository().getBranch();
+            Iterable<PushResult> origin = git.push()
+                .setRemote("origin")
+                .setRefSpecs(new RefSpec("refs/heads/" + branch))
+                .setForce(true)
                 .setTransportConfigCallback(transport -> {
                     if (transport instanceof SshTransport sshTransport) {
                         sshTransport.setSshSessionFactory(new SshdSessionFactory());
                     }
                 })
                 .call();
-            log.info("Pushed changes");
+            log.info("Pushed changes: {}",  origin);
         }
     }
 

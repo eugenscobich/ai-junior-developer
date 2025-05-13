@@ -78,6 +78,12 @@ public class ToolDispatcher {
                     yield "Files added to staging.";
                 }
 
+                case "deleteFiles" -> {
+                    List<String> filePaths = (List<String>) args.get("filePaths");
+                    filesService.deleteFiles(filePaths);
+                    yield "Files was deleted from workspace.";
+                }
+
                 case "commit" -> {
                     gitService.commit((String) args.get("message"));
                     yield "Committed with message: " + args.get("message");

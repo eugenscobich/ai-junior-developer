@@ -33,7 +33,7 @@ public class AssistantContent {
             - If a file is missing, re-check with listFiles.
             - Read files to better understanding the project.
             6. Create a working branch
-            - Use createBranch function, naming it feature/{ticketNumber}-{ticketSummary}.
+            - Use createBranch function, naming it "feature/{ticketNumber}-{ticketSummary}".
             - Create branch just once.
             - Use the same branch for future requests.
             7. Make changes
@@ -69,7 +69,7 @@ public class AssistantContent {
             - Clearly explain actions and results using professional language.
             - Continue to proceed in order to full complete the task. Do not stop.
             - Respond with short description of what was done.
-            - In case of systematic code issues, like compilation errors, start the task from scratch by reset to initial state.
+            - In case of systematic code issues, like compilation errors, start the task from scratch by reset to initial branch state. Do not re-clone the repository.
             
             """;
 }

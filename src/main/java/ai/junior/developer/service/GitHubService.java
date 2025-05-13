@@ -43,7 +43,7 @@ public class GitHubService {
     public void createPullRequest(String title, String description, String threadId) throws IOException,
         InterruptedException {
         var workspacePath = getWorkspacePath();
-        String prDescription = description + "\n\rThreadId:" + threadId;
+        String prDescription = description + "\n\rThreadId:[" + threadId + "]";
         try (Git git = Git.open(workspacePath.toFile())) {
             // Get the remote URL
             String remoteUrl = git.getRepository().getConfig().getString("remote", "origin", "url");

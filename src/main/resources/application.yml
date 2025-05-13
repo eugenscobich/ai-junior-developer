@@ -18,4 +18,6 @@ service:
     component-custom-field-name: customfield_10058
   github:
     api-token: change-me
+    webhook-secret: change-me
+    user-id: 210500703
 

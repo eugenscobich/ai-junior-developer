@@ -3,7 +3,6 @@ package ai.junior.developer.assistant;
 import ai.junior.developer.service.FilesService;
 import ai.junior.developer.service.GitHubService;
 import ai.junior.developer.service.GitService;
-import ai.junior.developer.service.MavenService;
 import ai.junior.developer.service.RunService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,7 +23,7 @@ public class ToolDispatcher {
     private final GitService gitService;
     private final ObjectMapper mapper = new ObjectMapper();
 
-    public String handleToolCall(String functionName, String argsJson) {
+    public String handleToolCall(String functionName, String argsJson, String threadId) {
         try {
             Map<String, Object> args = mapper.readValue(
                 argsJson, new TypeReference<>() {
@@ -69,6 +68,11 @@ public class ToolDispatcher {
                     yield "Branch created: " + args.get("branchName");
                 }
 
+                case "reset" -> {
+                    gitService.resetCurrentBranch();
+                    yield "Current branch was reset";
+                }
+
                 case "addFiles" -> {
                     gitService.addFiles((String) args.getOrDefault("pattern", null));
                     yield "Files added to staging.";
@@ -87,7 +91,8 @@ public class ToolDispatcher {
                 case "createPullRequest" -> {
                     githubService.createPullRequest(
                         (String) args.get("title"),
-                        (String) args.get("description")
+                        (String) args.get("description"),
+                        threadId
                     );
                     yield "Pull request created.";
                 }

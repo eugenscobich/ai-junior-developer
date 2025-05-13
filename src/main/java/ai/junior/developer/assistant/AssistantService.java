@@ -1,5 +1,9 @@
 package ai.junior.developer.assistant;
 
+import static ai.junior.developer.assistant.AssistantContent.ASSISTANT_DESCRIPTION;
+import static ai.junior.developer.assistant.AssistantContent.ASSISTANT_INSTRUCTIONS;
+import static ai.junior.developer.assistant.AssistantContent.ASSISTANT_MODEL;
+import static ai.junior.developer.assistant.AssistantContent.ASSISTANT_NAME;
 import static com.openai.models.beta.threads.messages.Message.Role.Value.ASSISTANT;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -100,7 +104,6 @@ public class AssistantService {
     }
 
     public String executePrompt(String prompt, String assistantId, String threadId) throws Exception {
-
         client.beta().threads().messages().create(MessageCreateParams.builder()
                 .threadId(threadId)
                 .role(MessageCreateParams.Role.USER)
@@ -144,11 +147,11 @@ public class AssistantService {
                     String functionName = toolCall.function().name();
                     String argumentsJson = toolCall.function().arguments();
 
-                    String result = dispatcher.handleToolCall(functionName, argumentsJson);
+                    String result = dispatcher.handleToolCall(functionName, argumentsJson, threadId);
 
                     toolOutputs.add(RunSubmitToolOutputsParams.ToolOutput.builder()
                             .toolCallId(toolCall.id())
-                            .output(result)
+                            .output(result.substring(0, 1048576))
                             .build());
                 }
 

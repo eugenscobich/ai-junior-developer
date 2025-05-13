@@ -9,6 +9,15 @@
     }
   },
   {
+  "name": "reset",
+  "description": "Reset current branch to original state",
+  "parameters": {
+    "type": "object",
+    "properties": {},
+    "required": []
+  }
+},
+  {
     "name": "createPullRequest",
     "description": "Create a git pull request",
     "parameters": {

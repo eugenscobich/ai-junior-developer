@@ -9,4 +9,8 @@ import lombok.Getter;
 public class GithubConfig {
     @NotBlank
     private String apiToken;
+    @NotBlank
+    private String webhookSecret;
+    @NotBlank
+    private String userId;
 }

@@ -63,7 +63,7 @@ public class ThreadService {
                 MessageListParams.builder().threadId(threadId).build()).data();
 
         allMessages.sort(Comparator.comparing(Message::createdAt));
-        log.info("allMessages: {}", allMessages);
+        //log.info("allMessages: {}", allMessages);
 
         Map<String, MessageResponse> groupedMessages = new LinkedHashMap<>();
         String currentUserMessageId = null;

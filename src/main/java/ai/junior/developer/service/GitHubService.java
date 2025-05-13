@@ -1,14 +1,16 @@
 package ai.junior.developer.service;
 
+import ai.junior.developer.assistant.AssistantService;
 import ai.junior.developer.config.ApplicationPropertiesConfig;
 import ai.junior.developer.service.model.GitHubCreatePullRequestPayload;
 import ai.junior.developer.service.model.GitHubCreatePullRequestResponse;
+import ai.junior.developer.service.model.GitHubCreateReplyCommentPayload;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -38,9 +40,10 @@ public class GitHubService {
         return workspacePath;
     }
 
-    public void createPullRequest(String title, String description) throws IOException,
+    public void createPullRequest(String title, String description, String threadId) throws IOException,
         InterruptedException {
         var workspacePath = getWorkspacePath();
+        String prDescription = description + "\n\rThreadId:" + threadId;
         try (Git git = Git.open(workspacePath.toFile())) {
             // Get the remote URL
             String remoteUrl = git.getRepository().getConfig().getString("remote", "origin", "url");
@@ -50,7 +53,7 @@ public class GitHubService {
             if (matcher.find()) {
 
                 String owner = matcher.group(2);
-                String repoName =matcher.group(3);
+                String repoName = matcher.group(3);
 
                 // Get the current branch name
                 String head = git.getRepository().getBranch();
@@ -59,7 +62,7 @@ public class GitHubService {
                     .title(title)
                     .base("main")
                     .head(head)
-                    .body(description)
+                    .body(prDescription)
                     .build();
 
                 String url = "/repos/" + owner + "/" + repoName + "/pulls";
@@ -147,4 +150,14 @@ public class GitHubService {
 
         return comments;
     }
+
+    public void addComment(String prUrl, String commentId, String result) {
+        var url = prUrl + "/comments/" + commentId + "/replies";
+        GitHubCreateReplyCommentPayload gitHubCreateReplyCommentPayload = GitHubCreateReplyCommentPayload.builder()
+            .body(result)
+            .build();
+        var response = githubRestTemplate.postForEntity(url, gitHubCreateReplyCommentPayload, String.class);
+        log.info("Added reply comment to {}. Response: {}", commentId, response);
+    }
+
 }

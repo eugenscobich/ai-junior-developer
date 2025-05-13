@@ -72,4 +72,12 @@ public class GitController {
         gitService.createBranch(branchName);
         return "Branch created and switched to: " + branchName;
     }
+
+    @Operation(summary = "Reset current branch")
+    @PostMapping("/reset")
+    public String createBranch() throws GitAPIException, IOException {
+        gitService.resetCurrentBranch();
+        return "Current branch was hard reset";
+    }
+
 }

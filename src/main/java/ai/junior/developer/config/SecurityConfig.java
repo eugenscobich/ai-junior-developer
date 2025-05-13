@@ -27,6 +27,7 @@ public class SecurityConfig {
                 auth.requestMatchers("/v3/api-docs").permitAll(); // allow plugin file
                 auth.requestMatchers("/", "/index.html").permitAll(); // allow home page
                 auth.requestMatchers("/api/jira/webhook").permitAll(); // allow home page
+                auth.requestMatchers("/api/github/webhook").permitAll(); // allow home page
                 auth.anyRequest().authenticated(); // all other requests require authentication
             })
                 .cors(Customizer.withDefaults())

@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ResetCommand.ResetType;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.transport.SshTransport;
 import org.eclipse.jgit.transport.URIish;
@@ -94,6 +95,16 @@ public class GitService {
                 .setName(branchName)
                 .call();
             log.info("Branch {} created", branchName);
+        }
+    }
+
+    public void resetCurrentBranch() throws IOException, GitAPIException {
+        var workspacePath = getWorkspacePath();
+        try (Git git = Git.open(workspacePath.toFile())) {
+            git.reset()
+                .setMode(ResetType.HARD)
+                .call();
+            log.info("Current branch was hard rested");
         }
     }
 }

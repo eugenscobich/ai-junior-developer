@@ -1,11 +1,9 @@
 package ai.junior.developer.service;
 
-import ai.junior.developer.assistant.AssistantService;
 import ai.junior.developer.config.ApplicationPropertiesConfig;
 import ai.junior.developer.service.model.GitHubCreatePullRequestPayload;
 import ai.junior.developer.service.model.GitHubCreatePullRequestResponse;
 import ai.junior.developer.service.model.GitHubCreateReplyCommentPayload;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -151,8 +149,8 @@ public class GitHubService {
         return comments;
     }
 
-    public void addComment(String prUrl, String commentId, String result) {
-        var url = prUrl + "/comments/" + commentId + "/replies";
+    public void addComment(String prUrl, String commentId, String result, boolean isReplyComment) {
+        var url = prUrl + "/comments" + (isReplyComment ? "/" + commentId + "/replies" : "");
         GitHubCreateReplyCommentPayload gitHubCreateReplyCommentPayload = GitHubCreateReplyCommentPayload.builder()
             .body(result)
             .build();

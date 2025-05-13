@@ -13,7 +13,10 @@ import ai.junior.developer.service.model.JiraCommentsResponse.Comment;
 import ai.junior.developer.service.model.JiraIssue;
 import ai.junior.developer.service.model.JiraWebhookEvent;
 import ai.junior.developer.service.model.JiraWebhookEvent.Changelog.Item;
+import com.atlassian.adf.jackson2.AdfJackson2;
+import com.atlassian.adf.markdown.MarkdownParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openai.models.beta.threads.Thread;
 import java.nio.charset.StandardCharsets;
@@ -167,26 +170,19 @@ public class JiraService {
      * @param issueKey    the key of the issue, e.g. <code>"PROJ-123"</code>
      * @param commentBody plain‑text comment body
      */
-    public void addComment(String issueKey, String commentBody) {
+    public void addComment(String issueKey, String commentBody) throws JsonProcessingException {
 
-        // --- Build ADF document wrapper --------------------------------------------------------
-        Map<String, Object> adfBody = Map.of(
-            "type", "doc",
-            "version", 1,
-            "content", List.of(
-                Map.of(
-                    "type", "paragraph",
-                    "content", List.of(
-                        Map.of(
-                            "type", "text",
-                            "text", commentBody
-                        )
-                    )
-                )
-            )
-        );
+        var markdownParser = new MarkdownParser();
 
-        Map<String, Object> payload = Map.of("body", adfBody);
+        var result = markdownParser.unmarshall(commentBody);
+
+        AdfJackson2 adfJackson2 = new AdfJackson2();
+
+        String body = adfJackson2.marshall(result);
+
+        JsonNode jsonNode = objectMapper.readTree(body);
+
+        Map<String, Object> payload = Map.of("body", jsonNode);
 
         // --- Prepare HTTP request --------------------------------------------------------------
         HttpHeaders headers = new HttpHeaders();

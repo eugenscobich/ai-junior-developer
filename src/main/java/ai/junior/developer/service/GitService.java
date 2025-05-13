@@ -104,7 +104,7 @@ public class GitService {
             git.reset()
                 .setMode(ResetType.HARD)
                 .call();
-            log.info("Current branch was hard rested");
+            log.info("Current branch was hard reset");
         }
     }
 }

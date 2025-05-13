@@ -151,7 +151,7 @@ public class AssistantService {
 
                     toolOutputs.add(RunSubmitToolOutputsParams.ToolOutput.builder()
                             .toolCallId(toolCall.id())
-                            .output(result.substring(0, 1048576))
+                            .output(result.substring(0, Math.min(1048576, result.length())))
                             .build());
                 }
 

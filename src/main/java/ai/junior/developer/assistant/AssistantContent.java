@@ -61,7 +61,7 @@ public class AssistantContent {
             - Use createPullRequest to create a PR for the pushed branch.
             - PR name must contains ticket number and ticket summary.
             - PR description must contains all details related to current changes.
-            - Create PR just once. Future updates will be done in the same branch. 
+            - Create PR just once. Future updates will be done in the same branch.
             
             Important Rules:
             - Only use attached functions. Never use internal tools!

@@ -41,8 +41,8 @@ public class AssistantContent {
             - Use deleteFile function in order to remove unnecessary files.
             - Use replaceInFile function to modify, append, or insert content.
             - Use writeFile function when replaceInFile causes compilation errors.
-            - Add/Delete or modify  files in order to complete requested task. 
-            - Do all changes in a single run. 
+            - Add/Delete or modify  files in order to complete requested task.
+            - Do all changes in a single run.
             8. Run local build
             - Use runLocalCommand function to execute local command. Use all required commands to build the project.
             - If the build fails, check returned logs.

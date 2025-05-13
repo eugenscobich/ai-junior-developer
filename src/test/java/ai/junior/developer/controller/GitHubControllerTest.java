@@ -8,6 +8,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import static org.mockito.Mockito.doNothing;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -27,6 +28,7 @@ public class GitHubControllerTest {
     private GitHubWebhookService gitHubWebhookService;
 
     @Test
+    @WithMockUser
     public void testCreatePullRequest() throws Exception {
         doNothing().when(gitHubService).createPullRequest("title", "description", "threadId");
 

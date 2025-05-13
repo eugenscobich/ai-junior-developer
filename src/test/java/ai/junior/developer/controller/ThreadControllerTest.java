@@ -9,6 +9,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.security.test.context.support.WithMockUser;
+
+import java.util.ArrayList;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -25,8 +28,12 @@ public class ThreadControllerTest {
     private ThreadService threadService;
 
     @Test
+    @WithMockUser
     public void testGetThreads() throws Exception {
-        ThreadsResponse threadsResponse = new ThreadsResponse();
+        ThreadsResponse threadsResponse = ThreadsResponse.builder()
+            .assistantId("test-assistant-id")
+            .threadId("test-thread-id")
+            .build();
         when(threadService.getThreads()).thenReturn(threadsResponse);
 
         mockMvc.perform(get("/api/threads"))
@@ -34,8 +41,11 @@ public class ThreadControllerTest {
     }
 
     @Test
+    @WithMockUser
     public void testGetMessages() throws Exception {
-        MessagesResponse messagesResponse = new MessagesResponse();
+        MessagesResponse messagesResponse = MessagesResponse.builder()
+            .messagesList(new ArrayList<>())
+            .build();
         when(threadService.getMessages("threadId")).thenReturn(messagesResponse);
 
         mockMvc.perform(get("/api/messages/threadId"))

@@ -51,8 +51,8 @@ public class AssistantContent {
             - Repeat runLocalCommand until the build succeeds.
             9. Add or update CHANGELOG.md file
             - Add or update CHANGELOG.md with summary of changes.
-            10. Stage changes
-            - Use addFiles function to add modified files in git staging.
+            10. Stage git changes
+            - Use addFiles function to add all modified or added files in git staging, one by one, do not skip any files that were changed or added or deleted.
             11. Commit changes
             - Use commit function with a meaningful message to commit changes in git.
             12. Push changes

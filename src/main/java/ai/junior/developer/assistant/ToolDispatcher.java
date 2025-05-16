@@ -73,6 +73,12 @@ public class ToolDispatcher {
                     yield "Current branch was reset";
                 }
 
+                case "resetAFile" -> {
+                    String filePath = (String) args.getOrDefault("filePath", null);
+                    gitService.resetAFile(filePath, threadId);
+                    yield "File " + filePath + " was reset";
+                }
+
                 case "addFiles" -> {
                     gitService.addFiles((String) args.getOrDefault("pattern", null), threadId);
                     yield "Files added to staging.";

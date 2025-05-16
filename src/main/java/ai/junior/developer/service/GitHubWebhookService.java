@@ -64,7 +64,7 @@ public class GitHubWebhookService {
                             AssistantService.buildAssistantParams(
                                 ASSISTANT_MODEL, ASSISTANT_NAME,
                                 ASSISTANT_DESCRIPTION, ASSISTANT_INSTRUCTIONS
-                            ));
+                            ), null);
 
 
                         var finalPath = "";

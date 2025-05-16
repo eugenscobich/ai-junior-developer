@@ -195,13 +195,13 @@ public class AssistantService {
         return thread;
     }
 
-    public Assistant findOrCreateAssistant(AssistantCreateParams.Builder assistantParams) throws IOException {
+    public Assistant findOrCreateAssistant(AssistantCreateParams.Builder assistantParams, String assistantModel) throws IOException {
         String storedHashCreatedAssistant = assistantParams.build().metadata()
                 .map(AssistantCreateParams.Metadata::_additionalProperties)
                 .map(props -> props.get("instructionHash"))
                 .map(JsonValue::asStringOrThrow)
                 .orElse(null);
-        Assistant assistant = findAssistant(assistantParams.build()._name().asStringOrThrow(), storedHashCreatedAssistant);
+        Assistant assistant = findAssistant(assistantParams.build()._name().asStringOrThrow(), storedHashCreatedAssistant, assistantModel);
 
         if (assistant == null) {
             return createAssistant(assistantParams);
@@ -209,7 +209,7 @@ public class AssistantService {
         return assistant;
     }
 
-    public Assistant findAssistant(String assistantName, String hash) {
+    public Assistant findAssistant(String assistantName, String hash, String assistantModel) {
         return client.beta().assistants().list().data().stream()
                 .filter(assistant -> assistant.name().isPresent() && assistant.name().get().equals(assistantName))
                 .filter(assistant -> hash.equals(
@@ -218,6 +218,7 @@ public class AssistantService {
                                 .map(props -> props.get("instructionHash"))
                                 .map(JsonValue::asStringOrThrow)
                                 .orElse(null)))
+                .filter(assistant -> assistantModel == null || assistant.model().equals(assistantModel))
                 .findFirst()
                 .orElse(null);
     }

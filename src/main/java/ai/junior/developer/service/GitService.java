@@ -103,4 +103,16 @@ public class GitService {
             log.info("Current branch was hard reset");
         }
     }
+
+    public void resetAFile(String filePath, String threadId) throws IOException, GitAPIException {
+        var workspacePath = workspaceService.getWorkspacePath(threadId);
+        try (Git git = Git.open(workspacePath.toFile())) {
+            git.reset()
+                .addPath(filePath)
+                .setMode(ResetType.HARD)
+                .call();
+            log.info("Reset {} file", filePath);
+        }
+    }
+
 }

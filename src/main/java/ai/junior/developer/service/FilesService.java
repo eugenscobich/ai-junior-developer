@@ -83,7 +83,7 @@ public class FilesService {
                 var content =  String.join("\n", lines);
                 var newContent = content.replace(from, to);
                 Files.writeString(filePath, newContent);
-                log.info("File {} is patched", filePathStr);
+                log.info("File {} is patched\nFrom:\n{}\nTo:\n{}", filePathStr, from, to);
             } else {
                 throw new AiJuniorDeveloperException("Requested file path is a directory. Use listFiles to find the right file path");
             }

@@ -65,7 +65,7 @@ public class JiraService {
             AssistantService.buildAssistantParams(
                 model, ASSISTANT_NAME,
                 ASSISTANT_DESCRIPTION, ASSISTANT_INSTRUCTIONS
-            ));
+            ), model);
 
         if (jiraWebhookEvent.getWebhookEvent().equals("jira:issue_updated")) {
             if (jiraWebhookEvent.getChangelog() != null && !jiraWebhookEvent.getChangelog().getItems().isEmpty()) {

@@ -4,6 +4,7 @@ import ai.junior.developer.config.ApplicationPropertiesConfig;
 import ai.junior.developer.service.model.GitHubCreatePullRequestPayload;
 import ai.junior.developer.service.model.GitHubCreatePullRequestResponse;
 import ai.junior.developer.service.model.GitHubCreateReplyCommentPayload;
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -26,21 +27,11 @@ import org.springframework.web.client.RestTemplate;
 @AllArgsConstructor
 public class GitHubService {
 
-    private final ApplicationPropertiesConfig applicationPropertiesConfig;
     private final RestTemplate githubRestTemplate;
+    private final WorkspaceService workspaceService;
 
-    private Path getWorkspacePath() throws IOException {
-        // Clean up if workspacePath already exists
-        Path workspacePath = applicationPropertiesConfig.getWorkspace().getPath();
-        if (Files.notExists(workspacePath)) {
-            Files.createDirectories(workspacePath);
-        }
-        return workspacePath;
-    }
-
-    public void createPullRequest(String title, String description, String threadId) throws IOException,
-        InterruptedException {
-        var workspacePath = getWorkspacePath();
+    public void createPullRequest(String title, String description, String threadId) throws IOException {
+        var workspacePath = workspaceService.getWorkspacePath(threadId);
         String prDescription = description + "\n\rThreadId:[" + threadId + "]";
         try (Git git = Git.open(workspacePath.toFile())) {
             // Get the remote URL

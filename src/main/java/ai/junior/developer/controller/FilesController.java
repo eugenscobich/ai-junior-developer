@@ -39,8 +39,10 @@ public class FilesController {
         }
     )
     @GetMapping("/listFiles")
-    public List<String> listFiles() throws IOException {
-        return filesService.listFiles();
+    public List<String> listFiles(
+        @Parameter(name = "threadId", description = "OpenAI Assistant Thread Id") @RequestParam String threadId
+    ) throws IOException {
+        return filesService.listFiles(threadId);
     }
 
     @Operation(
@@ -56,9 +58,10 @@ public class FilesController {
     @PostMapping("/writeFile")
     public void writeFile(
         @Parameter(name = "filePath", description = "File path to create and write/override the content") @RequestParam("filePath") String filePath,
-        @Parameter(name = "fileContent", description = "File content to save") @RequestParam("fileContent") String fileContent
+        @Parameter(name = "fileContent", description = "File content to save") @RequestParam("fileContent") String fileContent,
+        @Parameter(name = "threadId", description = "OpenAI Assistant Thread Id") @RequestParam String threadId
     ) throws IOException {
-        filesService.writeFile(filePath, fileContent);
+        filesService.writeFile(filePath, fileContent, threadId);
     }
 
     @Operation(
@@ -73,9 +76,10 @@ public class FilesController {
         })
     @GetMapping("/readFile")
     public String readFile(
-        @Parameter(name = "filePath", description = "File path to read") @RequestParam("filePath") String filePath
+        @Parameter(name = "filePath", description = "File path to read") @RequestParam("filePath") String filePath,
+        @Parameter(name = "threadId", description = "OpenAI Assistant Thread Id") @RequestParam String threadId
     ) throws IOException {
-        return filesService.readFile(filePath);
+        return filesService.readFile(filePath, threadId);
     }
 
     @Operation(
@@ -90,9 +94,10 @@ public class FilesController {
         })
     @GetMapping("/deleteFile")
     public void deleteFile(
-        @Parameter(name = "filePath", description = "File path to delete") @RequestParam("filePath") String filePath
+        @Parameter(name = "filePath", description = "File path to delete") @RequestParam("filePath") String filePath,
+        @Parameter(name = "threadId", description = "OpenAI Assistant Thread Id") @RequestParam String threadId
     ) throws IOException {
-        filesService.deleteFile(filePath);
+        filesService.deleteFile(filePath, threadId);
     }
 
     @Operation(
@@ -109,9 +114,10 @@ public class FilesController {
         })
     @GetMapping("/readFiles")
     public List<String> readFiles(
-        @Parameter(name = "filePaths", description = "File paths to read") @RequestParam("filePaths") List<String> filePaths
+        @Parameter(name = "filePaths", description = "File paths to read") @RequestParam("filePaths") List<String> filePaths,
+        @Parameter(name = "threadId", description = "OpenAI Assistant Thread Id") @RequestParam String threadId
     ) throws IOException {
-        return filesService.readFiles(filePaths);
+        return filesService.readFiles(filePaths, threadId);
     }
 
     @Operation(
@@ -126,9 +132,10 @@ public class FilesController {
         })
     @GetMapping("/deleteFiles")
     public void deleteFiles(
-        @Parameter(name = "filePaths", description = "File paths to delete") @RequestParam("filePaths") List<String> filePaths
+        @Parameter(name = "filePaths", description = "File paths to delete") @RequestParam("filePaths") List<String> filePaths,
+        @Parameter(name = "threadId", description = "OpenAI Assistant Thread Id") @RequestParam String threadId
     ) throws IOException {
-        filesService.deleteFiles(filePaths);
+        filesService.deleteFiles(filePaths, threadId);
     }
 
     @Operation(
@@ -147,8 +154,9 @@ public class FilesController {
         @Parameter(name = "from", description = "String that need to be replaced")
         @RequestParam("from") String from,
         @Parameter(name = "to", description = "String that will be replaced with")
-        @RequestParam("to") String to
+        @RequestParam("to") String to,
+        @Parameter(name = "threadId", description = "OpenAI Assistant Thread Id") @RequestParam String threadId
     ) throws IOException {
-        filesService.replaceInFile(filePath, from, to);
+        filesService.replaceInFile(filePath, from, to, threadId);
     }
 }

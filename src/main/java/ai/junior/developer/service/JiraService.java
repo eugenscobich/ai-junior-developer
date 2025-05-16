@@ -25,6 +25,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HexFormat;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -58,11 +59,14 @@ public class JiraService {
 
         var issueDetails = getIssueDetails(issueKey);
         var threadId = issueDetails.getFields().getExtras().get(applicationPropertiesConfig.getJira().getTreadIdCustomFieldName());
+        var openAiModel = issueDetails.getFields().getExtras().get(applicationPropertiesConfig.getJira().getOpenAiModelCustomFieldName());
+        var model = ((LinkedHashMap)openAiModel).get("value").toString();
         var assistant = assistantService.findOrCreateAssistant(
             AssistantService.buildAssistantParams(
-                ASSISTANT_MODEL, ASSISTANT_NAME,
+                model, ASSISTANT_NAME,
                 ASSISTANT_DESCRIPTION, ASSISTANT_INSTRUCTIONS
             ));
+
         if (jiraWebhookEvent.getWebhookEvent().equals("jira:issue_updated")) {
             if (jiraWebhookEvent.getChangelog() != null && !jiraWebhookEvent.getChangelog().getItems().isEmpty()) {
                 Optional<Item> assignee = jiraWebhookEvent.getChangelog().getItems().stream().filter(item -> item
@@ -80,12 +84,14 @@ public class JiraService {
 
                         addComment(
                             issueKey,
-                            "Ticket was assigned to AI Junior Developer. Link: http://localhost:3000/" + thread.id() + "/messages"
+                            "Ticket was assigned to AI Junior Developer.\n"
+                                + "Links: [AI Junior Developer Console](http://localhost:3000/" + thread.id() + "/messages) "
+                                + "[OpenAI Platform](https://platform.openai.com/playground/assistants?assistant=" + assistant.id() + "&thread=" + thread.id() + ")"
                         );
-
-                        var result = assistantService.executePrompt(
-                            "Title: " + issueKey + "-" + jiraWebhookEvent.getIssue().getFields().getSummary() + "\n" +
-                                "Description: " + jiraWebhookEvent.getIssue().getFields().getDescription(), assistant.id(), thread.id()
+                            var result = assistantService.executePrompt(
+                            "Issue key: " + issueKey + "\n"
+                                + "Task title: " + issueKey + "-" + jiraWebhookEvent.getIssue().getFields().getSummary() + "\n"
+                                + "Task: " + jiraWebhookEvent.getIssue().getFields().getDescription(), assistant.id(), thread.id()
                         );
 
                         addComment(issueKey, result);

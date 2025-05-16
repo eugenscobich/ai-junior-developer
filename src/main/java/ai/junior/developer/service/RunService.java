@@ -17,19 +17,20 @@ import org.springframework.stereotype.Service;
 public class RunService {
 
     private final ApplicationPropertiesConfig applicationPropertiesConfig;
+    private final WorkspaceService workspaceService;
 
-    public String run(String command) throws IOException, InterruptedException {
+    public String run(String command, String issueKey) throws IOException, InterruptedException {
         var args = new ArrayList<String>(Arrays.asList(command.split(" ")));
         args.addFirst("/c");
         args.addFirst("powershell.exe");
         ProcessBuilder processBuilder = new ProcessBuilder(args);
-        StringBuilder logs = runCommand(command, processBuilder);
+        StringBuilder logs = runCommand(command, processBuilder, issueKey);
 
         return logs.toString();
     }
 
-    private StringBuilder runCommand(String command, ProcessBuilder processBuilder) throws IOException, InterruptedException {
-        Path workspacePath = applicationPropertiesConfig.getWorkspace().getPath();
+    private StringBuilder runCommand(String command, ProcessBuilder processBuilder, String issueKey) throws IOException, InterruptedException {
+        Path workspacePath = workspaceService.getWorkspacePath(issueKey);
 
         StringBuilder logs = new StringBuilder();
 

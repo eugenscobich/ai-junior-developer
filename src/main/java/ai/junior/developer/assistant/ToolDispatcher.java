@@ -31,22 +31,22 @@ public class ToolDispatcher {
             );
 
             return switch (functionName) {
-                case "listFiles" -> String.join("\n", filesService.listFiles());
+                case "listFiles" -> String.join("\n", filesService.listFiles(threadId));
 
                 case "readFile" -> {
                     String filePath = (String) args.get("filePath");
-                    yield filesService.readFile(filePath);
+                    yield filesService.readFile(filePath, threadId);
                 }
 
                 case "readFiles" -> {
                     List<String> filePaths = (List<String>) args.get("filePaths");
-                    yield filesService.readFiles(filePaths).toString();
+                    yield filesService.readFiles(filePaths, threadId).toString();
                 }
 
                 case "writeFile" -> {
                     String filePath = (String) args.get("filePath");
                     String content = (String) args.get("fileContent");
-                    filesService.writeFile(filePath, content);
+                    filesService.writeFile(filePath, content, threadId);
                     yield "File written successfully: " + filePath;
                 }
 
@@ -54,43 +54,43 @@ public class ToolDispatcher {
                     String filePath = (String) args.get("filePath");
                     String from = (String) args.get("from");
                     String to = (String) args.get("to");
-                    filesService.replaceInFile(filePath, from, to);
+                    filesService.replaceInFile(filePath, from, to, threadId);
                     yield "File content replaced successfully: " + filePath;
                 }
 
                 case "cloneRepository" -> {
-                    gitService.cloneRepository((String) args.get("repoUrl"));
+                    gitService.cloneRepository((String) args.get("repoUrl"), threadId);
                     yield "Repository cloned: " + args.get("repoUrl");
                 }
 
                 case "createBranch" -> {
-                    gitService.createBranch((String) args.get("branchName"));
+                    gitService.createBranch((String) args.get("branchName"), threadId);
                     yield "Branch created: " + args.get("branchName");
                 }
 
                 case "reset" -> {
-                    gitService.resetCurrentBranch();
+                    gitService.resetCurrentBranch(threadId);
                     yield "Current branch was reset";
                 }
 
                 case "addFiles" -> {
-                    gitService.addFiles((String) args.getOrDefault("pattern", null));
+                    gitService.addFiles((String) args.getOrDefault("pattern", null), threadId);
                     yield "Files added to staging.";
                 }
 
                 case "deleteFiles" -> {
                     List<String> filePaths = (List<String>) args.get("filePaths");
-                    filesService.deleteFiles(filePaths);
+                    filesService.deleteFiles(filePaths, threadId);
                     yield "Files was deleted from workspace.";
                 }
 
                 case "commit" -> {
-                    gitService.commit((String) args.get("message"));
+                    gitService.commit((String) args.get("message"), threadId);
                     yield "Committed with message: " + args.get("message");
                 }
 
                 case "push" -> {
-                    gitService.push();
+                    gitService.push(threadId);
                     yield "Changes pushed.";
                 }
 
@@ -103,7 +103,7 @@ public class ToolDispatcher {
                     yield "Pull request created.";
                 }
 
-                case "runLocalCommand" -> runService.run((String) args.get("command"));
+                case "runLocalCommand" -> runService.run((String) args.get("command"), threadId);
 
                 default -> "Unknown function: " + functionName;
             };

@@ -5,14 +5,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.List;
-
 import lombok.AllArgsConstructor;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -38,45 +34,57 @@ public class GitController {
         })
     @PostMapping("/clone")
     public void cloneRepository(
-        @Parameter(name = "repoUrl", description = "Git repository url") @RequestParam("repoUrl") String repoUrl
+        @Parameter(name = "repoUrl", description = "Git repository url") @RequestParam String repoUrl,
+        @Parameter(name = "issueKey", description = "Issue key") @RequestParam String issueKey
     ) throws GitAPIException, IOException, URISyntaxException {
-        gitService.cloneRepository(repoUrl);
+        gitService.cloneRepository(repoUrl, issueKey);
     }
 
     @Operation(summary = "Add files to Git staging area")
     @PostMapping("/add")
-    public String addFiles(@RequestParam(required = false) String pattern) throws GitAPIException, IOException {
-        gitService.addFiles(pattern);
+    public String addFiles(
+        @Parameter(name = "pattern", description = "Pattern used to add files. List each file individual or the directory path.")
+        @RequestParam(required = false) String pattern,
+        @Parameter(name = "issueKey", description = "Issue key") @RequestParam(required = false) String issueKey
+    ) throws GitAPIException, IOException {
+        gitService.addFiles(pattern, issueKey);
         return "Files added to staging";
     }
 
     @Operation(summary = "Commit changes to Git")
     @PostMapping("/commit")
-    public String commit(@RequestParam String message) throws GitAPIException, IOException {
-        gitService.commit(message);
+    public String commit(
+        @Parameter(name = "message", description = "Commit message") @RequestParam String message,
+        @Parameter(name = "issueKey", description = "Issue key") @RequestParam String issueKey
+    ) throws GitAPIException, IOException {
+        gitService.commit(message, issueKey);
         return "Changes committed with message: " + message;
     }
 
-
     @Operation(summary = "Push changes to remote repository")
     @PostMapping("/push")
-    public String push() throws GitAPIException, IOException {
-        gitService.push();
+    public String push(
+        @Parameter(name = "issueKey", description = "Issue key") @RequestParam String issueKey
+    ) throws GitAPIException, IOException {
+        gitService.push(issueKey);
         return "Changes pushed to remote";
     }
 
-
     @Operation(summary = "Create a new Git branch")
     @PostMapping("/branch")
-    public String createBranch(@RequestParam String branchName) throws GitAPIException, IOException {
-        gitService.createBranch(branchName);
+    public String createBranch(
+        @Parameter(name = "branchName", description = "Branch name") @RequestParam String branchName,
+        @Parameter(name = "issueKey", description = "Issue key") @RequestParam String issueKey) throws GitAPIException, IOException {
+        gitService.createBranch(branchName, issueKey);
         return "Branch created and switched to: " + branchName;
     }
 
     @Operation(summary = "Reset current branch")
     @PostMapping("/reset")
-    public String createBranch() throws GitAPIException, IOException {
-        gitService.resetCurrentBranch();
+    public String createBranch(
+        @Parameter(name = "issueKey", description = "Issue key") @RequestParam String issueKey
+    ) throws GitAPIException, IOException {
+        gitService.resetCurrentBranch(issueKey);
         return "Current branch was hard reset";
     }
 

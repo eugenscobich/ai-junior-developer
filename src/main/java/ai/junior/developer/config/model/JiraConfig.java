@@ -21,6 +21,8 @@ public class JiraConfig {
     @NotBlank
     private String treadIdCustomFieldName;
     @NotBlank
+    private String openAiModelCustomFieldName;
+    @NotBlank
     private String componentCustomFieldName;
 
 }

@@ -1,6 +1,7 @@
 package ai.junior.developer.service;
 
 import ai.junior.developer.config.ApplicationPropertiesConfig;
+import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -24,13 +25,11 @@ import org.springframework.util.FileSystemUtils;
 public class GitService {
 
     private final ApplicationPropertiesConfig applicationPropertiesConfig;
+    private final WorkspaceService workspaceService;
 
-    public void cloneRepository(String repoUrl) throws IOException, GitAPIException, URISyntaxException {
-        Path workspacePath = applicationPropertiesConfig.getWorkspace().getPath();
-        if (Files.exists(workspacePath)) {
-            FileSystemUtils.deleteRecursively(workspacePath);
-        }
-        Files.createDirectories(workspacePath);
+    public void cloneRepository(String repoUrl, String threadId) throws IOException, GitAPIException, URISyntaxException {
+        Path workspacePath = workspaceService.getWorkspacePath(threadId);
+
         // Clone
         try (var git = Git.cloneRepository()
             .setURI(repoUrl)
@@ -50,33 +49,24 @@ public class GitService {
 
     }
 
-    private Path getWorkspacePath() throws IOException {
-        // Clean up if workspacePath already exists
-        Path workspacePath = applicationPropertiesConfig.getWorkspace().getPath();
-        if (Files.notExists(workspacePath)) {
-            Files.createDirectories(workspacePath);
-        }
-        return workspacePath;
-    }
-
-    public void addFiles(String pattern) throws IOException, GitAPIException {
-        var workspacePath = getWorkspacePath();
+    public void addFiles(String pattern, String threadId) throws IOException, GitAPIException {
+        var workspacePath = workspaceService.getWorkspacePath(threadId);
         try (Git git = Git.open(workspacePath.toFile())) {
             git.add().addFilepattern(pattern == null ? "." : pattern).call();
             log.info("Files added to staging using the pattern {}", pattern);
         }
     }
 
-    public void commit(String message) throws IOException, GitAPIException {
-        var workspacePath = getWorkspacePath();
+    public void commit(String message, String threadId) throws IOException, GitAPIException {
+        var workspacePath = workspaceService.getWorkspacePath(threadId);
         try (Git git = Git.open(workspacePath.toFile())) {
             git.commit().setMessage(message).call();
             log.info("Committed with message: {}", message);
         }
     }
 
-    public void push() throws IOException, GitAPIException {
-        var workspacePath = getWorkspacePath();
+    public void push(String threadId) throws IOException, GitAPIException {
+        var workspacePath = workspaceService.getWorkspacePath(threadId);
         try (Git git = Git.open(workspacePath.toFile())) {
             String branch = git.getRepository().getBranch();
             Iterable<PushResult> origin = git.push()
@@ -93,8 +83,8 @@ public class GitService {
         }
     }
 
-    public void createBranch(String branchName) throws IOException, GitAPIException {
-        var workspacePath = getWorkspacePath();
+    public void createBranch(String branchName, String threadId) throws IOException, GitAPIException {
+        var workspacePath = workspaceService.getWorkspacePath(threadId);
         try (Git git = Git.open(workspacePath.toFile())) {
             git.checkout()
                 .setCreateBranch(true)
@@ -104,8 +94,8 @@ public class GitService {
         }
     }
 
-    public void resetCurrentBranch() throws IOException, GitAPIException {
-        var workspacePath = getWorkspacePath();
+    public void resetCurrentBranch(String threadId) throws IOException, GitAPIException {
+        var workspacePath = workspaceService.getWorkspacePath(threadId);
         try (Git git = Git.open(workspacePath.toFile())) {
             git.reset()
                 .setMode(ResetType.HARD)

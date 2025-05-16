@@ -24,5 +24,4 @@ service:
 
 logging:
   pattern:
-    #console: "%clr(%d{HH:mm:ss.SSS}){faint} %clr(${LOG_LEVEL_PATTERN:[%5p]}){} %clr(%esb(){APPLICATION_NAME}%esb{APPLICATION_GROUP}[%15.15t] ${LOG_CORRELATION_PATTERN:-}){faint}%clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n"
     correlation: "[%X{assistantId},%X{threadId:-},%X{runId:-}] "

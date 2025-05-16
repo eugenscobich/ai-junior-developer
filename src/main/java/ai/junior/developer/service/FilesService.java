@@ -48,10 +48,10 @@ public class FilesService {
                 log.info("File {} is read", filePathStr);
                 return content;
             } else {
-                throw new AiJuniorDeveloperException("Requested file path is a directory. Use listFiles to find the right file path");
+                throw new AiJuniorDeveloperException("Requested file path: " + filePathStr + " is a directory. Use listFiles to find the right file path");
             }
         } else {
-            throw new AiJuniorDeveloperException("Requested file does not exist. Use listFiles to find the right file path");
+            throw new AiJuniorDeveloperException("Requested file: " + filePathStr + " does not exist. Use listFiles to find the right file path");
         }
     }
 

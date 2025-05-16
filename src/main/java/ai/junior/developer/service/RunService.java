@@ -35,7 +35,7 @@ public class RunService {
         StringBuilder logs = new StringBuilder();
 
         processBuilder.directory(workspacePath.toFile());
-        log.info("Running {} inside directory: {}", command, workspacePath.toFile().getAbsolutePath());
+        log.info("Running '{}' inside directory: {}", command, workspacePath.toFile().getAbsolutePath());
 
         processBuilder.redirectErrorStream(true);
         Process process = processBuilder.start();

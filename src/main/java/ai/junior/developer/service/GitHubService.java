@@ -4,6 +4,9 @@ import ai.junior.developer.config.ApplicationPropertiesConfig;
 import ai.junior.developer.service.model.GitHubCreatePullRequestPayload;
 import ai.junior.developer.service.model.GitHubCreatePullRequestResponse;
 import ai.junior.developer.service.model.GitHubCreateReplyCommentPayload;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -29,6 +32,7 @@ public class GitHubService {
 
     private final RestTemplate githubRestTemplate;
     private final WorkspaceService workspaceService;
+    private final ObjectMapper objectMapper;
 
     public void createPullRequest(String title, String description, String threadId) throws IOException {
         var workspacePath = workspaceService.getWorkspacePath(threadId);
@@ -140,13 +144,15 @@ public class GitHubService {
         return comments;
     }
 
-    public void addComment(String prUrl, String commentId, String result, boolean isReplyComment) {
+    public String addComment(String prUrl, String commentId, String result, boolean isReplyComment) throws JsonProcessingException {
         var url = prUrl + "/comments" + (isReplyComment ? "/" + commentId + "/replies" : "");
         GitHubCreateReplyCommentPayload gitHubCreateReplyCommentPayload = GitHubCreateReplyCommentPayload.builder()
             .body(result)
             .build();
         var response = githubRestTemplate.postForEntity(url, gitHubCreateReplyCommentPayload, String.class);
         log.info("Added reply comment to {}. Response: {}", commentId, response);
+        var jsonNode = objectMapper.readTree(response.getBody());
+        return jsonNode.get("id").toString();
     }
 
 }

@@ -4,6 +4,7 @@ import static ai.junior.developer.assistant.AssistantContent.ASSISTANT_DESCRIPTI
 import static ai.junior.developer.assistant.AssistantContent.ASSISTANT_INSTRUCTIONS;
 import static ai.junior.developer.assistant.AssistantContent.ASSISTANT_MODEL;
 import static ai.junior.developer.assistant.AssistantContent.ASSISTANT_NAME;
+import static ai.junior.developer.service.JiraService.getReplayCommentBody;
 
 import ai.junior.developer.assistant.AssistantService;
 import ai.junior.developer.config.ApplicationPropertiesConfig;
@@ -20,6 +21,7 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -65,7 +67,8 @@ public class GitHubWebhookService {
                                 ASSISTANT_MODEL, ASSISTANT_NAME,
                                 ASSISTANT_DESCRIPTION, ASSISTANT_INSTRUCTIONS
                             ), null);
-
+                        MDC.put("assistantId", assistant.id());
+                        MDC.put("threadId", threadId);
 
                         var finalPath = "";
                         if (lineNode != null && pathNode != null) {
@@ -73,14 +76,13 @@ public class GitHubWebhookService {
                         } else {
                             finalPath = finalPath + message;
                         }
-
-                        var result = assistantService.executePrompt(finalPath, assistant.id(), threadId);
                         JsonNode prUrlNode = commentNode.get("pull_request_url");
                         JsonNode issueUrlNode = commentNode.get("issue_url");
                         var finalUrl = prUrlNode != null ? prUrlNode.textValue() : issueUrlNode.textValue();
+                        var myCommentId = gitHubService.addComment(finalUrl, commentId, getReplayCommentBody(assistant.id(), threadId), prUrlNode != null);
 
-
-                        gitHubService.addComment(finalUrl, commentId, result, prUrlNode != null);
+                        var result = assistantService.executePrompt(finalPath, assistant.id(), threadId);
+                        gitHubService.addComment(finalUrl, myCommentId, result, prUrlNode != null);
                     }
                 }
 

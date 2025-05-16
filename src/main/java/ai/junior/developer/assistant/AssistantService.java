@@ -43,6 +43,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -114,6 +115,7 @@ public class AssistantService {
                 .threadId(threadId)
                 .assistantId(assistantId)
                 .build());
+        MDC.put("runId", run.id());
         log.info("Run id: {}", run.id());
         int maxRetries = 1000;
         int retryCount = 0;

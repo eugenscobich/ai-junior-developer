@@ -34,6 +34,7 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -66,27 +67,26 @@ public class JiraService {
                 model, ASSISTANT_NAME,
                 ASSISTANT_DESCRIPTION, ASSISTANT_INSTRUCTIONS
             ), model);
-
+        MDC.put("assistantId", assistant.id());
         if (jiraWebhookEvent.getWebhookEvent().equals("jira:issue_updated")) {
             if (jiraWebhookEvent.getChangelog() != null && !jiraWebhookEvent.getChangelog().getItems().isEmpty()) {
                 Optional<Item> assignee = jiraWebhookEvent.getChangelog().getItems().stream().filter(item -> item
                     .getFieldId().equals("assignee")).findFirst();
                 if (assignee.isPresent()) {
-
                     if (assignee.get().getTo() != null && assignee.get().getTo().equals(applicationPropertiesConfig.getJira().getUserId())
                         && threadId == null) {
                         log.info("Ticket was assigned to AI Junior Developer");
 
                         Thread thread = assistantService.createThread();
                         threadTracker.track(assistant.id(), thread.id());
-
+                        MDC.put("threadId", thread.id());
                         updateFields(issueKey, Map.of(applicationPropertiesConfig.getJira().getTreadIdCustomFieldName(), thread.id()));
 
                         addComment(
                             issueKey,
                             "Ticket was assigned to AI Junior Developer.\n"
-                                + "Links: [AI Junior Developer Console](http://localhost:3000/" + thread.id() + "/messages) "
-                                + "[OpenAI Platform](https://platform.openai.com/playground/assistants?assistant=" + assistant.id() + "&thread=" + thread.id() + ")"
+                                + "Links:\n[AI Junior Developer Console](http://localhost:3000/" + thread.id() + "/messages)\n"
+                                + "[OpenAI Platform](https://platform.openai.com/playground/assistants?assistant=" + assistant.id() + "&thread=" + thread.id() + ")\n"
                         );
                             var result = assistantService.executePrompt(
                             "Issue key: " + issueKey + "\n"
@@ -95,31 +95,18 @@ public class JiraService {
                         );
 
                         addComment(issueKey, result);
-
-                    /*
-
-                    List<Comment> comments = getComments(jiraWebhookEvent.getIssue().getKey());
-
-                    comments.forEach(c -> {
-                        String comment =
-                            c.getBody().getContent().stream()
-                                .map(ContentBlock::getContent)
-                                .flatMap(List::stream)
-                                .map(TextNode::getText)
-                                .map(Object::toString)
-                                .collect(Collectors.joining(" "));
-                        log.info(comment);
-                    });
-                    */
                     }
                 }
             }
         } else if (jiraWebhookEvent.getWebhookEvent().equals("comment_updated") || jiraWebhookEvent.getWebhookEvent().equals("comment_created")) {
             log.info("Comment is added to ticket that have trace id {}", threadId);
+            var assigneeId = issueDetails.getFields().getAssignee().getAccountId();
             if (threadId != null && !Objects.equals(
                 jiraWebhookEvent.getComment().getAuthor().getAccountId(),
-                applicationPropertiesConfig.getJira().getUserId()
-            )) {
+                applicationPropertiesConfig.getJira().getUserId())
+                && assigneeId.equals(applicationPropertiesConfig.getJira().getUserId())
+            ) {
+                log.info("Comment is addressed to ai-junior-developer");
                 var result = assistantService.executePrompt(jiraWebhookEvent.getComment().getBody(), assistant.id(), threadId.toString());
                 addComment(issueKey, result);
             }

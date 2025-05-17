@@ -2,6 +2,7 @@ package ai.junior.developer.service;
 
 import ai.junior.developer.assistant.AssistantService;
 import ai.junior.developer.assistant.ThreadTracker;
+import ai.junior.developer.log.LogbackAppender;
 import ai.junior.developer.service.model.MessageResponse;
 import ai.junior.developer.service.model.MessagesResponse;
 import ai.junior.developer.service.model.PromptRequest;
@@ -15,6 +16,7 @@ import com.openai.models.beta.threads.messages.Text;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 import com.openai.models.beta.threads.messages.TextContentBlock;
 
@@ -63,7 +65,6 @@ public class ThreadService {
                 MessageListParams.builder().threadId(threadId).build()).data();
 
         allMessages.sort(Comparator.comparing(Message::createdAt));
-        //log.info("allMessages: {}", allMessages);
 
         Map<String, MessageResponse> groupedMessages = new LinkedHashMap<>();
         String currentUserMessageId = null;
@@ -79,6 +80,8 @@ public class ThreadService {
             UserOrAssistantMessageResponse messageDto = UserOrAssistantMessageResponse.builder()
                     .value(value)
                     .createdAt(msg.createdAt())
+                    .threadId(msg.threadId())
+                    .runId(msg.runId().isPresent() ? msg.runId().get() : null)
                     .build();
 
             switch (msg.role().value()) {
@@ -108,9 +111,9 @@ public class ThreadService {
                 .build();
     }
 
-    public String sendPromptToExistingThread(PromptRequest request) throws Exception {
-        System.out.println(request);
-
+    public Map<String, String> sendPromptToExistingThread(PromptRequest request) throws Exception {
+        MDC.put("assistantId", request.getAssistantId());
+        MDC.put("threadId", request.getThreadId());
         return assistantService.executePrompt(request.getPrompt(), request.getAssistantId(), request.getThreadId());
     }
 }

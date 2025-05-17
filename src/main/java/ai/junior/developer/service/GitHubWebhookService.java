@@ -82,7 +82,7 @@ public class GitHubWebhookService {
                         var myCommentId = gitHubService.addComment(finalUrl, commentId, getReplayCommentBody(assistant.id(), threadId), prUrlNode != null);
 
                         var result = assistantService.executePrompt(finalPath, assistant.id(), threadId);
-                        gitHubService.addComment(finalUrl, myCommentId, result, prUrlNode != null);
+                        gitHubService.addComment(finalUrl, myCommentId, result.get("assistantMessage"), prUrlNode != null);
                     }
                 }
 

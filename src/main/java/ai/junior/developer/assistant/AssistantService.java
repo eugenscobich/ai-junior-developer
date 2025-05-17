@@ -104,7 +104,7 @@ public class AssistantService {
                 .build());
     }
 
-    public String executePrompt(String prompt, String assistantId, String threadId) throws Exception {
+    public Map<String, String> executePrompt(String prompt, String assistantId, String threadId) throws Exception {
         client.beta().threads().messages().create(MessageCreateParams.builder()
                 .threadId(threadId)
                 .role(MessageCreateParams.Role.USER)
@@ -179,7 +179,8 @@ public class AssistantService {
                         .build())
                 .data();
         log.info(messages.toString());
-        return messages.stream()
+
+        String assistantMessage = messages.stream()
                 .filter(m -> m.role().value().equals(ASSISTANT))
                 .map(Message::content)
                 .flatMap(Collection::stream)
@@ -189,6 +190,9 @@ public class AssistantService {
                 .map(TextContentBlock::text)
                 .map(Text::value)
                 .collect(Collectors.joining(" "));
+        return Map.of(
+                "runId", run.id(), 
+                "assistantMessage", assistantMessage);
     }
 
     public Thread createThread() {

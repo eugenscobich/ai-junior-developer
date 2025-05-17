@@ -13,4 +13,6 @@ import java.util.List;
 public class UserOrAssistantMessageResponse {
     public String value;
     public Long createdAt;
+    public String threadId;
+    public String runId;
 }

@@ -93,7 +93,7 @@ public class JiraService {
                                 + "Task: " + jiraWebhookEvent.getIssue().getFields().getDescription(), assistant.id(), thread.id()
                         );
 
-                        addComment(issueKey, result);
+                        addComment(issueKey, result.get("assistantMessage"));
                     }
                 }
             }
@@ -107,7 +107,7 @@ public class JiraService {
             ) {
                 log.info("Comment is addressed to ai-junior-developer");
                 var result = assistantService.executePrompt(jiraWebhookEvent.getComment().getBody(), assistant.id(), threadId.toString());
-                addComment(issueKey, result);
+                addComment(issueKey, result.get("assistantMessage"));
             }
 
         }

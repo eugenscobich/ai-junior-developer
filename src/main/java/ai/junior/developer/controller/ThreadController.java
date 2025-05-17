@@ -1,6 +1,7 @@
 package ai.junior.developer.controller;
 
 import ai.junior.developer.assistant.ThreadTracker;
+import ai.junior.developer.log.LogbackAppender;
 import ai.junior.developer.service.ThreadService;
 import ai.junior.developer.service.model.MessagesResponse;
 import ai.junior.developer.service.model.PromptRequest;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Queue;
 
 @Tag(name = "Control existing thread", description = "Expose thread id and messages from thread.")
 @RestController
@@ -24,6 +26,7 @@ import java.util.Optional;
 public class ThreadController {
 
     private final ThreadService threadService;
+    private final LogbackAppender logbackAppender;
 
     @GetMapping("/api/threads")
     public ResponseEntity<ThreadsResponse> getThreads() throws Exception {
@@ -37,9 +40,15 @@ public class ThreadController {
         return ResponseEntity.ok(messages);
     }
 
+    @GetMapping("/api/logs")
+    public ResponseEntity<Map<String, Queue<String>>> getLogs() {
+        var logs = logbackAppender.getLogMessages();
+        return ResponseEntity.ok(logs);
+    }
+
     @PostMapping("/api/prompt/thread")
-    public ResponseEntity<String> sendPromptToExistingThread(@RequestBody PromptRequest request) throws Exception {
-        String response = threadService.sendPromptToExistingThread(request);
+    public ResponseEntity<Map<String, String>> sendPromptToExistingThread(@RequestBody PromptRequest request) throws Exception {
+        Map<String, String> response = threadService.sendPromptToExistingThread(request);
         return ResponseEntity.ok(response);
     }
 }

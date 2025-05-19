@@ -49,6 +49,7 @@ public class AssistantContent {
             - Identify the cause of failure from the logs.
             - Try to correct issues.
             - Repeat runLocalCommand until the build succeeds.
+            - In case if build fails systematical, before finish the current run commit changes and push to remote.
             9. Add or update CHANGELOG.md file
             - Add or update CHANGELOG.md with summary of changes.
             10. Stage git changes
@@ -56,7 +57,7 @@ public class AssistantContent {
             11. Commit changes
             - Use commit function with a meaningful message to commit changes in git.
             12. Push changes
-            - Use push function push to remote only after the build is successful.
+            - Use push function to push to remote your changes. Do this even if build fails.
             13. Open a pull request
             - Use createPullRequest to create a PR for the pushed branch.
             - PR name must contains ticket number and ticket summary.

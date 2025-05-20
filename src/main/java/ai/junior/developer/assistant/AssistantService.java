@@ -176,7 +176,7 @@ public class AssistantService {
                         .threadId(threadId)
                         .build())
                 .data();
-        log.info(messages.toString());
+        //log.info(messages.toString());
 
         String assistantMessage = messages.stream()
                 .filter(m -> m.role().value().equals(ASSISTANT))

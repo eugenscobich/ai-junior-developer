@@ -1,9 +1,5 @@
 package ai.junior.developer.assistant;
 
-import static ai.junior.developer.assistant.AssistantContent.ASSISTANT_DESCRIPTION;
-import static ai.junior.developer.assistant.AssistantContent.ASSISTANT_INSTRUCTIONS;
-import static ai.junior.developer.assistant.AssistantContent.ASSISTANT_MODEL;
-import static ai.junior.developer.assistant.AssistantContent.ASSISTANT_NAME;
 import static com.openai.models.beta.threads.messages.Message.Role.Value.ASSISTANT;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -53,6 +49,7 @@ public class AssistantService {
 
     private final OpenAIClient client;
     private final ToolDispatcher dispatcher;
+    private final RunIdTracker runIdTracker;
 
     public Assistant createAssistant(AssistantCreateParams.Builder builder) throws IOException {
 
@@ -116,6 +113,7 @@ public class AssistantService {
                 .assistantId(assistantId)
                 .build());
         MDC.put("runId", run.id());
+        runIdTracker.track(run.id(), prompt);
         log.info("Run id: {}", run.id());
         int maxRetries = 1000;
         int retryCount = 0;

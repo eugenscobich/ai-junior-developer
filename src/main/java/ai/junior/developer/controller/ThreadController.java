@@ -1,5 +1,6 @@
 package ai.junior.developer.controller;
 
+import ai.junior.developer.assistant.RunIdTracker;
 import ai.junior.developer.assistant.ThreadTracker;
 import ai.junior.developer.log.LogbackAppender;
 import ai.junior.developer.service.ThreadService;
@@ -26,6 +27,7 @@ import java.util.Queue;
 public class ThreadController {
 
     private final ThreadService threadService;
+    private final RunIdTracker runIdTracker;
     private final LogbackAppender logbackAppender;
 
     @GetMapping("/api/threads")
@@ -38,6 +40,12 @@ public class ThreadController {
     public ResponseEntity<MessagesResponse> getMessages(@PathVariable String threadId) {
         var messages = threadService.getMessages(threadId);
         return ResponseEntity.ok(messages);
+    }
+
+    @GetMapping("/api/runIdTrack")
+    public ResponseEntity<Map<String, String>> runIdTrack() {
+        var runId = runIdTracker.getAllTrackedRunId();
+        return ResponseEntity.ok(runId);
     }
 
     @GetMapping("/api/logs")

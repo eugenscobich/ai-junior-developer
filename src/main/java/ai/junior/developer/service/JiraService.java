@@ -38,6 +38,7 @@ import org.slf4j.MDC;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -53,6 +54,7 @@ public class JiraService {
     private final AssistantService assistantService;
     private final ThreadTracker threadTracker;
 
+    @Async
     public void webhook(String requestBody) throws Exception {
         log.info(requestBody);
         JiraWebhookEvent jiraWebhookEvent = objectMapper.readValue(requestBody, JiraWebhookEvent.class);
@@ -169,7 +171,10 @@ public class JiraService {
      * @param commentBody plain‑text comment body
      */
     public void addComment(String issueKey, String commentBody) throws JsonProcessingException {
-
+        if (commentBody.isEmpty()) {
+            log.warn("Comment is empty");
+            return;
+        }
         var markdownParser = new MarkdownParser();
 
         var result = markdownParser.unmarshall(commentBody);

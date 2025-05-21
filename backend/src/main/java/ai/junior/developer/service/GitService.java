@@ -53,7 +53,7 @@ public class GitService {
         var workspacePath = workspaceService.getWorkspacePath(threadId);
         try (Git git = Git.open(workspacePath.toFile())) {
             git.add().addFilepattern(pattern == null ? "." : pattern).call();
-            log.info("Files added to staging using the pattern {}", pattern);
+            log.info("Add to git staging: {}", pattern);
         }
     }
 
@@ -61,7 +61,7 @@ public class GitService {
         var workspacePath = workspaceService.getWorkspacePath(threadId);
         try (Git git = Git.open(workspacePath.toFile())) {
             git.commit().setMessage(message).call();
-            log.info("Committed with message: {}", message);
+            log.info("Git commit with message: {}", message);
         }
     }
 
@@ -79,7 +79,7 @@ public class GitService {
                     }
                 })
                 .call();
-            log.info("Pushed changes: {}",  origin);
+            log.info("Git pushed to: {}",  branch);
         }
     }
 
@@ -90,7 +90,7 @@ public class GitService {
                 .setCreateBranch(true)
                 .setName(branchName)
                 .call();
-            log.info("Branch {} created", branchName);
+            log.info("Create branch: {}", branchName);
         }
     }
 

@@ -33,7 +33,7 @@ public class FilesService {
                     .forEach(path -> fileList.add(workspacePath.relativize(path).toString()));
             }
         }
-        log.info("Files are returned: {}", fileList);
+        log.info("Read file list: {}", fileList);
         return fileList;
     }
 
@@ -45,7 +45,7 @@ public class FilesService {
             if (!Files.isDirectory(filePath)) {
                 List<String> lines = Files.readAllLines(filePath);
                 var content = String.join("\n", lines);
-                log.info("File {} is read", filePathStr);
+                log.info("Read file: {}", filePathStr);
                 return content;
             } else {
                 throw new AiJuniorDeveloperException("Requested file path: " + filePathStr + " is a directory. Use listFiles to find the right file path");
@@ -62,14 +62,14 @@ public class FilesService {
         if (!Files.exists(filePath)) {
             var parentPath = filePath.getParent();
             if (!Files.exists(parentPath)) {
-                log.info("Directories are not existing, create them");
+                //log.info("Directories are not existing, create them");
                 Files.createDirectories(parentPath);
             }
-            log.info("File does not exist, create it");
+            //log.info("File does not exist, create it");
             Files.createFile(filePath);
         }
         Files.writeString(filePath, fileContent);
-        log.info("File {} is written", filePathStr);
+        log.info("Write file: {}", filePathStr);
     }
 
     public void replaceInFile(String filePathStr, String from, String to, String threadId) throws IOException {
@@ -86,7 +86,7 @@ public class FilesService {
                 if (newContent.equals(content)) {
                     throw new AiJuniorDeveloperException("Replace in file filed. From '" + from + "' does not exist.");
                 }
-                log.info("File {} is patched\nFrom:\n{}\nTo:\n{}", filePathStr, from, to);
+                log.info("Patch file: {}\nFrom:\n{}\nTo:\n{}", filePathStr, from, to);
             } else {
                 throw new AiJuniorDeveloperException("Requested file path is a directory. Use listFiles to find the right file path");
             }

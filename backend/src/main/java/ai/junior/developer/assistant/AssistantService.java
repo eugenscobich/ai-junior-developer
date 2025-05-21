@@ -1,5 +1,6 @@
 package ai.junior.developer.assistant;
 
+import static ai.junior.developer.assistant.AssistantContent.ASSISTANT_FUNCTIONS;
 import static com.openai.models.beta.threads.messages.Message.Role.Value.ASSISTANT;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -54,10 +55,8 @@ public class AssistantService {
     public Assistant createAssistant(AssistantCreateParams.Builder builder) throws IOException {
 
         ObjectMapper mapper = new ObjectMapper();
-        File jsonFile = new File("assistant_functions.json");
 
-        List<Map<String, Object>> functions = mapper.readValue(
-                jsonFile,
+        List<Map<String, Object>> functions = mapper.readValue(ASSISTANT_FUNCTIONS,
                 new TypeReference<>() {
                 }
         );

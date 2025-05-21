@@ -8,7 +8,13 @@
     <version>1.0.0</version>
     <name>Ai Junior Developer Backend</name>
     <description>Spring Boot backend for custom ChatGPT</description>
-    <packaging>jar</packaging>
+
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>frontend</module>
+        <module>backend</module>
+    </modules>
 
 
     <parent>
@@ -25,140 +31,22 @@
         <adf-builder-java.version>1.6.0</adf-builder-java.version>
     </properties>
 
-    <dependencies>
-        <!-- Spring Boot starters -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-
-        <!-- Spring Security -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-security</artifactId>
-        </dependency>
-
-        <!-- SpringDoc OpenAPI -->
-        <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>${springdoc-openapi-starter-webmvc-ui.version}</version>
-        </dependency>
-
-        <!-- JGit for Git operations -->
-        <dependency>
-            <groupId>org.eclipse.jgit</groupId>
-            <artifactId>org.eclipse.jgit</artifactId>
-            <version>${org.eclipse.jgit.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jgit</groupId>
-            <artifactId>org.eclipse.jgit.ssh.apache</artifactId>
-            <version>${org.eclipse.jgit.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.atlassian.adf</groupId>
-            <artifactId>adf-builder-java</artifactId>
-            <version>${adf-builder-java.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.atlassian.adf</groupId>
-            <artifactId>adf-builder-java-markdown</artifactId>
-            <version>${adf-builder-java.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.atlassian.adf</groupId>
-            <artifactId>adf-builder-java-jackson2</artifactId>
-            <version>${adf-builder-java.version}</version>
-        </dependency>
-
-        <!-- Lombok (optional, for convenience) -->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>1.18.30</version>
-            <scope>provided</scope>
-        </dependency>
-
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.15.2</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.openai</groupId>
-            <artifactId>openai-java</artifactId>
-            <version>1.6.0</version>
-        </dependency>
-    </dependencies>
-
-    <build>
-        <plugins>
-            <!-- Spring Boot Maven Plugin -->
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.13.0</version>
-                <configuration>
-                    <source>21</source> <!-- Java version -->
-                    <target>21</target>
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                            <version>1.18.30</version>
-                        </path>
-                    </annotationProcessorPaths>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>3.1.0</version>
-                <executions>
-                    <execution>
-                        <id>custom-clean-install</id>
-                        <phase>none</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>mvn</executable>
-                            <arguments>
-                                <argument>clean</argument>
-                                <argument>install</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
-
     <repositories>
         <repository>
             <id>atlassian-site</id>
             <url>https://maven.artifacts.atlassian.com/</url>
         </repository>
     </repositories>
+    <build>
+        <pluginManagement>
+            <plugins>
+                <!-- We’ll use this in the frontend module -->
+                <plugin>
+                    <groupId>com.github.eirslett</groupId>
+                    <artifactId>frontend-maven-plugin</artifactId>
+                    <version>1.13.1</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
 </project>

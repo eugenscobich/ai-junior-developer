@@ -28,7 +28,7 @@ public class RunService {
             args.addFirst("-c");
             args.addFirst("/bin/sh");
         }
-
+        log.info("Executing command: {}", args);
 
         ProcessBuilder processBuilder = new ProcessBuilder(args);
         StringBuilder logs = runCommand(command, processBuilder, issueKey);

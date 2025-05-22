@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,7 +21,7 @@ public class RunService {
     private final WorkspaceService workspaceService;
 
     public String run(String command, String issueKey) throws IOException, InterruptedException {
-        var args = new ArrayList<String>(Arrays.asList(command.split(" ")));
+        var args = new ArrayList<String>(Collections.singletonList(command));
         if (isWindows()) {
             args.addFirst("/c");
             args.addFirst("powershell.exe");

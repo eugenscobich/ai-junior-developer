@@ -21,12 +21,24 @@ public class RunService {
 
     public String run(String command, String issueKey) throws IOException, InterruptedException {
         var args = new ArrayList<String>(Arrays.asList(command.split(" ")));
-        args.addFirst("/c");
-        args.addFirst("powershell.exe");
+        if (isWindows()) {
+            args.addFirst("/c");
+            args.addFirst("powershell.exe");
+        } else {
+            args.addFirst("-c");
+            args.addFirst("/bin/sh");
+        }
+
+
         ProcessBuilder processBuilder = new ProcessBuilder(args);
         StringBuilder logs = runCommand(command, processBuilder, issueKey);
 
         return logs.toString();
+    }
+
+    private static boolean isWindows() {
+        return System.getProperty("os.name")
+            .toLowerCase().contains("win");
     }
 
     private StringBuilder runCommand(String command, ProcessBuilder processBuilder, String issueKey) throws IOException, InterruptedException {

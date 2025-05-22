@@ -29,7 +29,7 @@ public class SecurityConfig {
                 auth.requestMatchers("/", "/index.html").permitAll(); // allow home page
                 auth.requestMatchers("/api/jira/webhook").permitAll(); // allow home page
                 auth.requestMatchers("/api/github/webhook").permitAll(); // allow home page
-                auth.anyRequest().authenticated(); // all other requests require authentication
+                //auth.anyRequest().authenticated(); // all other requests require authentication
             })
                 .cors(Customizer.withDefaults())
                 .httpBasic(Customizer.withDefaults());

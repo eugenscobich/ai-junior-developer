@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.io.IOException;
 import java.util.List;
 import lombok.AllArgsConstructor;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -96,7 +97,7 @@ public class FilesController {
     public void deleteFile(
         @Parameter(name = "filePath", description = "File path to delete") @RequestParam("filePath") String filePath,
         @Parameter(name = "threadId", description = "OpenAI Assistant Thread Id") @RequestParam String threadId
-    ) throws IOException {
+    ) throws IOException, GitAPIException {
         filesService.deleteFile(filePath, threadId);
     }
 
@@ -134,7 +135,7 @@ public class FilesController {
     public void deleteFiles(
         @Parameter(name = "filePaths", description = "File paths to delete") @RequestParam("filePaths") List<String> filePaths,
         @Parameter(name = "threadId", description = "OpenAI Assistant Thread Id") @RequestParam String threadId
-    ) throws IOException {
+    ) throws IOException, GitAPIException {
         filesService.deleteFiles(filePaths, threadId);
     }
 

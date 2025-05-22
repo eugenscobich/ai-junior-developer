@@ -62,7 +62,7 @@ public class GitHubService {
                 var response = githubRestTemplate.postForEntity(url, gitHubCreatePullRequestPayload, GitHubCreatePullRequestResponse.class);
 
                 if (response.getStatusCode().value() == 201) {
-                    log.info("Pull Request created successfully: {}", response.getBody());
+                    log.info("Pull Request created successfully: {}",response.getBody().getHtmlUrl());
                 } else {
                     log.error("Failed to create Pull Request: {} {}", response.getStatusCode(), response.getBody());
                     throw new IOException("Failed to create Pull Request: HTTP " + response.getStatusCode());

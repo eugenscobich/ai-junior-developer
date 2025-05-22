@@ -1,10 +1,8 @@
 package ai.junior.developer.service;
 
 import ai.junior.developer.config.ApplicationPropertiesConfig;
-import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +15,6 @@ import org.eclipse.jgit.transport.SshTransport;
 import org.eclipse.jgit.transport.URIish;
 import org.eclipse.jgit.transport.sshd.SshdSessionFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.util.FileSystemUtils;
 
 @Slf4j
 @Service
@@ -115,4 +112,13 @@ public class GitService {
         }
     }
 
+    public void deleteAFile(String filePath, String threadId) throws IOException, GitAPIException {
+        var workspacePath = workspaceService.getWorkspacePath(threadId);
+        try (Git git = Git.open(workspacePath.toFile())) {
+            git.rm()
+                .addFilepattern(filePath)
+                .call();
+            log.info("Git delete a file: {}", filePath);
+        }
+    }
 }

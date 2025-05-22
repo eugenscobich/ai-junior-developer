@@ -2,7 +2,6 @@ package ai.junior.developer.service;
 
 import ai.junior.developer.config.ApplicationPropertiesConfig;
 import ai.junior.developer.exception.AiJuniorDeveloperException;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -10,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -19,6 +19,7 @@ public class FilesService {
 
     private final ApplicationPropertiesConfig applicationPropertiesConfig;
     private final WorkspaceService workspaceService;
+    private final GitService gitService;
 
     public List<String> listFiles(String threadId) throws IOException {
         Path workspacePath = workspaceService.getWorkspacePath(threadId);
@@ -103,14 +104,17 @@ public class FilesService {
         return filesContent;
     }
 
-    public void deleteFile(String filePathStr, String threadId) throws IOException {
+    public void deleteFile(String filePathStr, String threadId) throws IOException, GitAPIException {
         Path workspacePath = workspaceService.getWorkspacePath(threadId);
         var filePath = workspacePath.resolve(filePathStr);
         Files.delete(filePath);
+
+        gitService.deleteAFile(filePathStr, threadId);
+
         log.info("File {} is deleted", filePathStr);
     }
 
-    public void deleteFiles(List<String> filePaths, String threadId) throws IOException {
+    public void deleteFiles(List<String> filePaths, String threadId) throws IOException, GitAPIException {
         for (String filePath : filePaths) {
             deleteFile(filePath, threadId);
         }

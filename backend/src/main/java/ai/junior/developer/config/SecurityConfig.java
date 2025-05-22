@@ -24,6 +24,7 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> {
                 auth.requestMatchers("/.well-known/ai-plugin.json").permitAll(); // allow plugin file
+                auth.requestMatchers("/static/**").permitAll(); // allow plugin file
                 auth.requestMatchers("/v3/api-docs").permitAll(); // allow plugin file
                 auth.requestMatchers("/", "/index.html").permitAll(); // allow home page
                 auth.requestMatchers("/api/jira/webhook").permitAll(); // allow home page

@@ -12,4 +12,5 @@ import java.util.List;
 public class ResponsesByRoleModel {
     List<ResponsesItemModel> user;
     List<ResponsesItemModel> assistant;
+    List<ResponsesItemModel> functionCall;
 }

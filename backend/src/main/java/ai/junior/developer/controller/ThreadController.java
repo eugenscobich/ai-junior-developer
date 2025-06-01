@@ -1,7 +1,7 @@
 package ai.junior.developer.controller;
 
 import ai.junior.developer.assistant.RunIdTracker;
-import ai.junior.developer.assistant.ThreadTracker;
+import ai.junior.developer.config.ApplicationPropertiesConfig;
 import ai.junior.developer.log.LogbackAppender;
 import ai.junior.developer.service.ThreadService;
 import ai.junior.developer.service.model.MessagesResponse;
@@ -16,9 +16,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import java.io.IOException;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Queue;
 
 @Tag(name = "Control existing thread", description = "Expose thread id and messages from thread.")
@@ -29,6 +28,7 @@ public class ThreadController {
     private final ThreadService threadService;
     private final RunIdTracker runIdTracker;
     private final LogbackAppender logbackAppender;
+    private final ApplicationPropertiesConfig config;
 
     @GetMapping("/api/threads")
     public ResponseEntity<ThreadsResponse> getThreads() throws Exception {
@@ -37,8 +37,13 @@ public class ThreadController {
     }
 
     @GetMapping("/api/messages/{threadId}")
-    public ResponseEntity<MessagesResponse> getMessages(@PathVariable String threadId) {
-        var messages = threadService.getMessages(threadId);
+    public ResponseEntity<MessagesResponse> getMessages(@PathVariable String threadId) throws IOException {
+        MessagesResponse messages;
+        if (config.getToggleAi().getAssistant()) {
+            messages = threadService.getMessages(threadId);
+        } else {
+            messages = threadService.getMessagesFromResponses(threadId);
+        }
         return ResponseEntity.ok(messages);
     }
 
@@ -50,7 +55,12 @@ public class ThreadController {
 
     @GetMapping("/api/logs")
     public ResponseEntity<Map<String, Queue<String>>> getLogs() {
-        var logs = logbackAppender.getLogMessages();
+        Map<String, Queue<String>> logs;
+        if (config.getToggleAi().getAssistant()) {
+            logs = logbackAppender.getLogMessages();
+        } else {
+            logs = threadService.getFunctionCall();
+        }
         return ResponseEntity.ok(logs);
     }
 

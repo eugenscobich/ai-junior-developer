@@ -1,5 +1,6 @@
 package ai.junior.developer.controller;
 
+import ai.junior.developer.assistant.ThreadTracker;
 import ai.junior.developer.responses.ResponseIdTracker;
 import ai.junior.developer.responses.ResponsesService;
 import ai.junior.developer.service.model.ResponsesByRoleModel;
@@ -21,11 +22,13 @@ public class ResponsesController {
 
     private final ResponsesService responsesService;
     private final ResponseIdTracker responseIdTracker;
+    private final ThreadTracker threadTracker;
 
     @GetMapping("/api/responses")
     public ResponseEntity<String> executeResponses(@RequestParam String input) throws Exception {
         String responsesId = responseIdTracker.getLastTrackedResponseId();
         String threadId = UUID.randomUUID().toString().replace("-", "");
+        threadTracker.track("assistant", threadId);
         var tracked = responsesService.createResponses(input, responsesId, threadId);
         System.out.println("responsesIdList:" + responseIdTracker.getAllTrackedResponsesId());
         log.info(tracked.toString());

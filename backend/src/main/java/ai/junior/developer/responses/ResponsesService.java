@@ -1,5 +1,6 @@
 package ai.junior.developer.responses;
 
+import ai.junior.developer.assistant.RunIdTracker;
 import ai.junior.developer.assistant.ToolDispatcher;
 import ai.junior.developer.service.model.ResponsesByRoleModel;
 import ai.junior.developer.service.model.ResponsesItemModel;
@@ -31,6 +32,7 @@ public class ResponsesService {
     private final OpenAIClient client;
     private final ToolDispatcher dispatcher;
     private final ResponseIdTracker responseIdTracker;
+    private final RunIdTracker runIdTracker;
 
     public Response createResponses(String userContent, @Nullable String previousResponseId, String threadId)
             throws IOException {
@@ -96,6 +98,7 @@ public class ResponsesService {
 
         if (functionCall.isEmpty()) {
             responseIdTracker.track(firstResponse.id());
+            runIdTracker.track(firstResponse.id(), userContent);
             return firstResponse;
         }
 
@@ -130,6 +133,7 @@ public class ResponsesService {
         );
 
         responseIdTracker.track(secondResponse.id());
+        runIdTracker.track(secondResponse.id(), userContent);
         return secondResponse;
     }
 
@@ -202,10 +206,15 @@ public class ResponsesService {
         List<ResponseOutputItem> outputItems = outputResponse.output();
         List<ResponsesItemModel> outputMessages = new ArrayList<>();
         for (ResponseOutputItem item : outputItems) {
-            outputMessages.add(ResponsesItemModel.builder()
-                    .messageId(item.asMessage().id())
-                    .message(item.asMessage().content().getFirst().asOutputText().text())
-                    .build());
+            if (item.isMessage()) {
+                ResponseOutputMessage msg = item.asMessage();
+                String text = msg.content().getFirst().asOutputText().text();
+                outputMessages.add(ResponsesItemModel.builder()
+                        .messageId(item.asMessage().id())
+                        .message(text)
+                        .createdAt((long) outputResponse.createdAt())
+                        .build());
+            }
         }
 
         return outputMessages;

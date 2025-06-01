@@ -48,6 +48,7 @@ public class JiraResponsesService {
     private final ObjectMapper objectMapper;
     private final ResponsesService responsesService;
     private final ResponseIdTracker responseIdTracker;
+    private final ThreadTracker threadTracker;
 
     @Async
     public void webhook(String requestBody) throws Exception {
@@ -69,6 +70,7 @@ public class JiraResponsesService {
                         log.info("Ticket was assigned to AI Junior Developer");
 
                         String uuid = UUID.randomUUID().toString().replace("-", "");
+                        threadTracker.track("assistant", uuid);
                         updateFields(issueKey, Map.of(applicationPropertiesConfig.getJira().getTreadIdCustomFieldName(), uuid));
 
                         addComment(

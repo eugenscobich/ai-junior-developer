@@ -10,4 +10,5 @@ import lombok.Data;
 public class ResponsesItemModel {
     String messageId;
     String message;
+    Long createdAt;
 }

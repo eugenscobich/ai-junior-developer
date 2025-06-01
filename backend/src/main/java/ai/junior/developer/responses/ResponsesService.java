@@ -32,10 +32,8 @@ public class ResponsesService {
     private final ToolDispatcher dispatcher;
     private final ResponseIdTracker responseIdTracker;
 
-    public Response createResponses(
-            String userContent,
-            @Nullable String previousResponseId
-    ) throws IOException {
+    public Response createResponses(String userContent, @Nullable String previousResponseId, String threadId)
+            throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         List<Map<String, Object>> functions = mapper.readValue(
                 RESPONSES_FUNCTIONS,
@@ -106,8 +104,7 @@ public class ResponsesService {
         String fnName = fnCall.asFunctionCall().name();
         String argJson = fnCall.asFunctionCall().arguments();
 
-        String uuid = UUID.randomUUID().toString().replace("-", "");
-        String toolResultJson = dispatcher.handleToolCall(fnName, argJson, uuid);
+        String toolResultJson = dispatcher.handleToolCall(fnName, argJson, threadId);
         List<ResponseInputItem> followUpInputs = new ArrayList<>();
 
         ResponseFunctionToolCall fnCallItem = ResponseFunctionToolCall.builder()

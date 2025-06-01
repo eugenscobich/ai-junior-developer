@@ -1,20 +1,15 @@
 package ai.junior.developer.service;
 
-import ai.junior.developer.config.ApplicationPropertiesConfig;
 import ai.junior.developer.service.model.GitHubCreatePullRequestPayload;
 import ai.junior.developer.service.model.GitHubCreatePullRequestResponse;
 import ai.junior.developer.service.model.GitHubCreateReplyCommentPayload;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;

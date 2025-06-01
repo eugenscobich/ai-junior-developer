@@ -21,6 +21,8 @@ service:
     api-token: change-me
     webhook-secret: change-me
     user-id: 210500703
+  toggle-ai:
+    assistant: false
 
 logging:
   pattern:

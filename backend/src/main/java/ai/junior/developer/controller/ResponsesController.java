@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @Tag(name = "Responses API", description = "Execute Responses API ")
@@ -24,7 +25,8 @@ public class ResponsesController {
     @GetMapping("/api/responses")
     public ResponseEntity<String> executeResponses(@RequestParam String input) throws Exception {
         String responsesId = responseIdTracker.getLastTrackedResponseId();
-        var tracked = responsesService.createResponses(input, responsesId);
+        String threadId = UUID.randomUUID().toString().replace("-", "");
+        var tracked = responsesService.createResponses(input, responsesId, threadId);
         System.out.println("responsesIdList:" + responseIdTracker.getAllTrackedResponsesId());
         log.info(tracked.toString());
         return ResponseEntity.ok(tracked.toString());

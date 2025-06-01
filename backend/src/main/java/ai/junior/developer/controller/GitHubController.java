@@ -1,6 +1,8 @@
 package ai.junior.developer.controller;
 
+import ai.junior.developer.config.ApplicationPropertiesConfig;
 import ai.junior.developer.service.GitHubService;
+import ai.junior.developer.service.GitHubWebhookResponsesService;
 import ai.junior.developer.service.GitHubWebhookService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,6 +25,8 @@ public class GitHubController {
 
     private final GitHubService githubService;
     private final GitHubWebhookService githubWebhookService;
+    private final GitHubWebhookResponsesService gitHubWebhookResponsesService;
+    private final ApplicationPropertiesConfig config;
 
 
     @Operation(summary = "Create a new Git pull request")
@@ -51,6 +55,10 @@ public class GitHubController {
     public void webhook(@RequestBody String payload, @RequestHeader("X-Hub-Signature") String xHubSignature)
         throws Exception {
         githubWebhookService.validateRequest(payload, xHubSignature);
-        githubWebhookService.handleWebhook(payload);
+        if(config.getToggleAi().getAssistant()) {
+            githubWebhookService.handleWebhook(payload);
+        } else {
+            gitHubWebhookResponsesService.handleWebhook(payload);
+        }
     }
 }

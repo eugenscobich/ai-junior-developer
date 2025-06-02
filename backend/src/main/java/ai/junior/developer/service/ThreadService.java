@@ -11,6 +11,7 @@ import com.openai.models.beta.threads.Thread;
 import com.openai.models.beta.threads.messages.Message;
 import com.openai.models.beta.threads.messages.MessageListParams;
 import com.openai.models.beta.threads.messages.Text;
+import com.openai.models.responses.Response;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -121,15 +122,13 @@ public class ThreadService {
                 continue;
             }
 
-            String fullUserMsgId      = trackedUser.getUser().get(0).getMessageId();
+            String fullUserMsgId = trackedUser.getUser().get(0).getMessageId();
             String fullAssistantMsgId = trackedAssistant.get(0).getMessageId();
 
             String userMessageIdExtract = StringUtils.left(
-                    StringUtils.substringAfter(fullUserMsgId, "_"), 6
-            );
+                    StringUtils.substringAfter(fullUserMsgId, "_"), 6);
             String assistantMessageIdExtract = StringUtils.left(
-                    StringUtils.substringAfter(fullAssistantMsgId, "_"), 6
-            );
+                    StringUtils.substringAfter(fullAssistantMsgId, "_"), 6);
 
             if (userMessageIdExtract.equals(assistantMessageIdExtract)) {
                 UserOrAssistantMessageResponse userMsgDto =
@@ -173,13 +172,43 @@ public class ThreadService {
                 .build();
     }
 
-    public Map<String, Queue<String>> getFunctionCall() {
-        return null;
+    public Map<String, Queue<String>> getFunctionCall() throws Exception {
+        String uuid = getThreads().getThreadId();
+        List<String> responsesIdId = responseIdTracker.getAllTrackedResponsesId();
+        Map<String, Queue<String>> functionCall = new HashMap<>();
+
+        for (String responsesId : responsesIdId) {
+            List<ResponsesItemModel> trackedAssistant = responsesService.getOutputListMessages(responsesId);
+
+            if (trackedAssistant.isEmpty()) {
+                continue;
+            }
+
+            String key = uuid + "_" + responsesId;
+            boolean hasFunctionCallTool = trackedAssistant.stream()
+                    .anyMatch(item -> "functionToolCall".equals(item.getType()));
+
+            if (hasFunctionCallTool) {
+                List<ResponsesItemModel> chosenStream = trackedAssistant.stream()
+                        .filter(item -> "functionToolCall".equals(item.getType())).toList();
+                Queue<String> queue = new LinkedList<>();
+                chosenStream.forEach(item -> queue.add(item.getMessage()));
+                functionCall.put(key, queue);
+            }
+        }
+        return functionCall;
     }
 
     public Map<String, String> sendPromptToExistingThread(PromptRequest request) throws Exception {
         MDC.put("assistantId", request.getAssistantId());
         MDC.put("threadId", request.getThreadId());
         return assistantService.executePrompt(request.getPrompt(), request.getAssistantId(), request.getThreadId());
+    }
+
+    public Map<String, String> sendPromptToResponses(PromptRequest request) throws Exception {
+        var previousResponses = responseIdTracker.getLastTrackedResponseId();
+        Response response = responsesService.createResponses(request.getPrompt(), previousResponses, request.getThreadId());
+
+        return responsesService.getAssistantMessage(response.id());
     }
 }

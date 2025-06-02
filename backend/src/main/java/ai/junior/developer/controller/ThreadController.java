@@ -55,7 +55,7 @@ public class ThreadController {
     }
 
     @GetMapping("/api/logs")
-    public ResponseEntity<Map<String, Queue<String>>> getLogs() {
+    public ResponseEntity<Map<String, Queue<String>>> getLogs() throws Exception {
         Map<String, Queue<String>> logs;
         if (config.getToggleAi().getAssistant()) {
             logs = logbackAppender.getLogMessages();
@@ -67,7 +67,12 @@ public class ThreadController {
 
     @PostMapping("/api/prompt/thread")
     public ResponseEntity<Map<String, String>> sendPromptToExistingThread(@RequestBody PromptRequest request) throws Exception {
-        Map<String, String> response = threadService.sendPromptToExistingThread(request);
+        Map<String, String> response;
+        if (config.getToggleAi().getAssistant()) {
+            response = threadService.sendPromptToExistingThread(request);
+        } else {
+            response = threadService.sendPromptToResponses(request);
+        }
         return ResponseEntity.ok(response);
     }
 }

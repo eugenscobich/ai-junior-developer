@@ -14,6 +14,7 @@ import com.openai.models.responses.inputitems.InputItemListParams;
 import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -21,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import java.util.stream.Stream;
 
 import static ai.junior.developer.assistant.AssistantContent.*;
 
@@ -250,5 +252,29 @@ public class ResponsesService {
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("Hashing failed", e);
         }
+    }
+
+    public Map<String, String> getAssistantMessage(String responseId) throws Exception {
+        Map<String, String> responses = new HashMap<>();
+        ResponsesByRoleModel trackedUser = getInputListMessages(responseId);
+        List<ResponsesItemModel> trackedAssistant = getOutputListMessages(responseId);
+
+        String fullAssistantMsgId = trackedAssistant.get(0).getMessageId();
+        String assistantMessageIdExtract = StringUtils.left(
+                StringUtils.substringAfter(fullAssistantMsgId, "_"), 6);
+
+        boolean hasFunctionCallTool = trackedAssistant.stream()
+                .anyMatch(item -> "functionToolCall".equals(item.getType()));
+        Stream<ResponsesItemModel> chosenStream;
+        if (hasFunctionCallTool) {
+            chosenStream = trackedUser.getFunctionCall().stream();
+        } else {
+            chosenStream = trackedAssistant.stream()
+                    .filter(item -> "assistant".equals(item.getType()));
+        }
+
+        responses.put("runId", assistantMessageIdExtract);
+        responses.put("assistantMessage", chosenStream.map(ResponsesItemModel::getMessage).findAny().get());
+        return responses;
     }
 }

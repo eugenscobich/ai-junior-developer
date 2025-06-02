@@ -78,15 +78,8 @@ public class GitHubWebhookResponsesService {
 
                         String responsesId = responseIdTracker.getLastTrackedResponseId();
                         var result = responsesService.createResponses(finalPath, responsesId, threadId);
-                        var assistantMessage = responsesService.getOutputListMessages(responsesId);
-                        assistantMessage.forEach(mes -> {
-                            try {
-                                gitHubService.addComment(finalUrl, myCommentId, mes.getMessage(), prUrlNode != null);
-                            } catch (JsonProcessingException e) {
-                                throw new RuntimeException(e);
-                            }
-                        });
-
+                        var mes = responsesService.getAssistantMessage(result.id());
+                        gitHubService.addComment(finalUrl, myCommentId, mes.get("assistantMessage"), prUrlNode != null);
                     }
                 }
 

@@ -78,20 +78,14 @@ public class JiraResponsesService {
                             getReplayCommentBody(uuid)
                         );
                         String responsesId = responseIdTracker.getLastTrackedResponseId();
-                        responsesService.createResponses(
+                        var currentResponse = responsesService.createResponses(
                             "Issue key: " + issueKey + "\n"
                                 + "Task title: " + issueKey + "-" + jiraWebhookEvent.getIssue().getFields().getSummary() + "\n"
                                 + "Task: " + jiraWebhookEvent.getIssue().getFields().getDescription(), responsesId, uuid
                         );
 
-                        var assistantMessage = responsesService.getOutputListMessages(responsesId);
-                        assistantMessage.forEach(message -> {
-                            try {
-                                addComment(issueKey, message.getMessage());
-                            } catch (JsonProcessingException e) {
-                                throw new RuntimeException(e);
-                            }
-                        });
+                        var assistantMessage = responsesService.getAssistantMessage(currentResponse.id());
+                        addComment(issueKey, assistantMessage.get("assistantMessage"));
                     }
                 }
             }
@@ -105,17 +99,10 @@ public class JiraResponsesService {
             ) {
                 log.info("Comment is addressed to ai-junior-developer");
                 String responsesId = responseIdTracker.getLastTrackedResponseId();
-                responsesService.createResponses(jiraWebhookEvent.getComment().getBody(), responsesId, threadId.toString());
-                var assistantMessage = responsesService.getOutputListMessages(responsesId);
-                assistantMessage.forEach(message -> {
-                    try {
-                        addComment(issueKey, message.getMessage());
-                    } catch (JsonProcessingException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
+                var currentResponse = responsesService.createResponses(jiraWebhookEvent.getComment().getBody(), responsesId, threadId.toString());
+                var assistantMessage = responsesService.getAssistantMessage(currentResponse.id());
+                addComment(issueKey, assistantMessage.get("assistantMessage"));
             }
-
         }
     }
 

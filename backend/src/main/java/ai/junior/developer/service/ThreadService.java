@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -108,38 +109,67 @@ public class ThreadService {
     }
 
     public MessagesResponse getMessagesFromResponses(String threadId) throws IOException {
-        String responsesId = responseIdTracker.getLastTrackedResponseId();
-        ResponsesByRoleModel trackedUser = responsesService.getInputListMessages(responsesId);
-        List<ResponsesItemModel> trackedAssistant = responsesService.getOutputListMessages(responsesId);
+        List<String> responsesIds = responseIdTracker.getAllTrackedResponsesId();
 
-        String fullUserMsgId = trackedUser.getUser().get(0).getMessageId();
-        String fullAssistantMsgId = trackedAssistant.get(0).getMessageId();
+        List<MessageResponse> allResponses = new ArrayList<>();
 
-        String userMessageIdExtract = StringUtils.left(StringUtils.substringAfter(fullUserMsgId, "_"), 6);
-        String assistantMessageIdExtract = StringUtils.left(StringUtils.substringAfter(fullAssistantMsgId, "_"), 6);
+        for (String responsesId : responsesIds) {
+            ResponsesByRoleModel trackedUser = responsesService.getInputListMessages(responsesId);
+            List<ResponsesItemModel> trackedAssistant = responsesService.getOutputListMessages(responsesId);
 
-        List<MessageResponse> responses = new ArrayList<>();
-        if (userMessageIdExtract.equals(assistantMessageIdExtract)) {
-            responses.add(MessageResponse.builder()
-                    .userMessage(UserOrAssistantMessageResponse.builder()
-                            .threadId(threadId)
-                            .value(trackedUser.getUser().getFirst().getMessage())
-                            .createdAt(trackedAssistant.get(0).getCreatedAt())
-                            .runId(userMessageIdExtract)
-                            .build())
-                    .assistantMessages(trackedAssistant.stream().map(item ->
-                            UserOrAssistantMessageResponse.builder()
-                                    .threadId(threadId)
-                                    .value(item.getMessage())
-                                    .createdAt(trackedAssistant.get(0).getCreatedAt())
-                                    .runId(assistantMessageIdExtract)
-                                    .build()).toList())
-                    .build());
+            if (trackedUser.getUser().isEmpty() || trackedAssistant.isEmpty()) {
+                continue;
+            }
+
+            String fullUserMsgId      = trackedUser.getUser().get(0).getMessageId();
+            String fullAssistantMsgId = trackedAssistant.get(0).getMessageId();
+
+            String userMessageIdExtract = StringUtils.left(
+                    StringUtils.substringAfter(fullUserMsgId, "_"), 6
+            );
+            String assistantMessageIdExtract = StringUtils.left(
+                    StringUtils.substringAfter(fullAssistantMsgId, "_"), 6
+            );
+
+            if (userMessageIdExtract.equals(assistantMessageIdExtract)) {
+                UserOrAssistantMessageResponse userMsgDto =
+                        UserOrAssistantMessageResponse.builder()
+                                .threadId(threadId)
+                                .value(trackedUser.getUser().get(0).getMessage())
+                                .createdAt(trackedUser.getUser().get(0).getCreatedAt())
+                                .runId(userMessageIdExtract)
+                                .build();
+
+                boolean hasFunctionCallTool = trackedAssistant.stream()
+                        .anyMatch(item -> "functionToolCall".equals(item.getType()));
+                Stream<ResponsesItemModel> chosenStream;
+                if (hasFunctionCallTool) {
+                    chosenStream = trackedUser.getFunctionCall().stream();
+                } else {
+                    chosenStream = trackedAssistant.stream()
+                            .filter(item -> "assistant".equals(item.getType()));
+                }
+                List<UserOrAssistantMessageResponse> assistantDtos =
+                        chosenStream.map(item -> UserOrAssistantMessageResponse.builder()
+                                        .threadId(threadId)
+                                        .value(item.getMessage())
+                                        .createdAt(item.getCreatedAt())
+                                        .runId(assistantMessageIdExtract)
+                                        .build()
+                                )
+                                .toList();
+
+                allResponses.add(
+                        MessageResponse.builder()
+                                .userMessage(userMsgDto)
+                                .assistantMessages(assistantDtos)
+                                .build()
+                );
+            }
         }
 
-        log.info("Responses messages: " + responses.toArray().length);
         return MessagesResponse.builder()
-                .messagesList(responses)
+                .messagesList(allResponses)
                 .build();
     }
 

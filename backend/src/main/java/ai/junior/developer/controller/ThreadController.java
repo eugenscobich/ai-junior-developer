@@ -42,6 +42,7 @@ public class ThreadController {
         if (config.getToggleAi().getAssistant()) {
             messages = threadService.getMessages(threadId);
         } else {
+
             messages = threadService.getMessagesFromResponses(threadId);
         }
         return ResponseEntity.ok(messages);

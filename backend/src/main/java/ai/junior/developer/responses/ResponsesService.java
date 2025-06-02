@@ -157,6 +157,7 @@ public class ResponsesService {
                                 ResponsesItemModel.builder()
                                         .messageId(item.asResponseInputMessageItem().id())
                                         .message(txt.text())
+                                        .type("user")
                                         .build()
                         );
                     }
@@ -172,6 +173,7 @@ public class ResponsesService {
                                 ResponsesItemModel.builder()
                                         .messageId(item.asResponseOutputMessage().id())
                                         .message(text)
+                                        .type("assistant")
                                         .build()
                         );
                     }
@@ -184,6 +186,7 @@ public class ResponsesService {
                 functionCall.add(
                         ResponsesItemModel.builder()
                                 .messageId(fnOut.id())
+                                .type("functionToolCall")
                                 .message(text)
                                 .build()
                 );
@@ -205,15 +208,30 @@ public class ResponsesService {
         log.info("getOutputListMessages: " + outputResponse.output());
         List<ResponseOutputItem> outputItems = outputResponse.output();
         List<ResponsesItemModel> outputMessages = new ArrayList<>();
-        for (ResponseOutputItem item : outputItems) {
+        for (ResponseOutputItem item : outputResponse.output()) {
             if (item.isMessage()) {
                 ResponseOutputMessage msg = item.asMessage();
                 String text = msg.content().getFirst().asOutputText().text();
-                outputMessages.add(ResponsesItemModel.builder()
-                        .messageId(item.asMessage().id())
-                        .message(text)
-                        .createdAt((long) outputResponse.createdAt())
-                        .build());
+                outputMessages.add(
+                        ResponsesItemModel.builder()
+                                .messageId(msg.id())
+                                .message(text)
+                                .type("assistant")
+                                .build()
+                );
+                continue;
+            }
+
+            if (item.isFunctionCall()) {
+                ResponseFunctionToolCall fnCall = item.asFunctionCall();
+                String text = "FUNCTION CALL → " + fnCall.name() + "(args=" + fnCall.arguments() + ")";
+                outputMessages.add(
+                        ResponsesItemModel.builder()
+                                .messageId(fnCall.id().orElse("<no-id>"))
+                                .message(text)
+                                .type("functionToolCall")
+                                .build()
+                );
             }
         }
 

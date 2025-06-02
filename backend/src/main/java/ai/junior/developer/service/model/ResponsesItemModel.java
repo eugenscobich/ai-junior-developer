@@ -11,4 +11,5 @@ public class ResponsesItemModel {
     String messageId;
     String message;
     Long createdAt;
+    String type;
 }

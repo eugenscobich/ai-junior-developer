@@ -90,7 +90,9 @@ public class JiraService {
                 && assignee.getAccountId().equals(applicationPropertiesConfig.getJira().getUserId())
             ) {
                 log.info("Comment is addressed to ai-junior-developer");
-                var result = llmService.executePrompt(jiraWebhookEvent.getComment().getBody(), threadIdFieldValue.toString());
+                String threadId = threadIdFieldValue.toString();
+                llmService.continueAThread(threadId);
+                var result = llmService.executePrompt(jiraWebhookEvent.getComment().getBody(), threadId);
                 addComment(issueKey, result);
             }
         }

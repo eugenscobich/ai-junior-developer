@@ -270,7 +270,7 @@ public class ResponsesService implements LlmService {
             response = client.responses().create(
                 ResponseCreateParams.builder()
                     .model(ASSISTANT_MODEL)
-                    //.instructions(ASSISTANT_INSTRUCTIONS)
+                    .instructions(ASSISTANT_INSTRUCTIONS)
                     .tools(toolDefinitions)
                     .previousResponseId(previousResponsesId)
                     .input(ResponseCreateParams.Input.ofText(prompt))
@@ -336,7 +336,7 @@ public class ResponsesService implements LlmService {
             var submitFunctionsResponse = client.responses().create(
                 ResponseCreateParams.builder()
                     .model(ASSISTANT_MODEL)
-                    //.instructions(ASSISTANT_INSTRUCTIONS)
+                    .instructions(ASSISTANT_INSTRUCTIONS)
                     .tools(toolDefinitions)
                     .previousResponseId(response.id())
                     .input(ResponseCreateParams.Input.ofResponse(followUpInputs))

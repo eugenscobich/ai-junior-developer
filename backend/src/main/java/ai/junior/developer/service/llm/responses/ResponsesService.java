@@ -5,11 +5,9 @@ import static ai.junior.developer.service.llm.assistant.AssistantContent.ASSISTA
 import static ai.junior.developer.service.llm.assistant.AssistantContent.RESPONSES_FUNCTIONS;
 
 import ai.junior.developer.service.llm.LlmService;
-import ai.junior.developer.service.llm.assistant.RunIdTracker;
 import ai.junior.developer.service.llm.assistant.ToolDispatcher;
 import ai.junior.developer.service.model.ResponsesByRoleModel;
 import ai.junior.developer.service.model.ResponsesItemModel;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openai.client.OpenAIClient;
@@ -31,7 +29,6 @@ import com.openai.models.responses.ResponseRetrieveParams;
 import com.openai.models.responses.Tool;
 import com.openai.models.responses.inputitems.InputItemListPage;
 import com.openai.models.responses.inputitems.InputItemListParams;
-import jakarta.annotation.Nullable;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -40,7 +37,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -50,14 +46,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.MDC;
-import org.springdoc.core.service.GenericResponseService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@ConditionalOnProperty(name="service.llm.type", havingValue = "responses")
+@ConditionalOnProperty(name = "service.llm.type", havingValue = "responses")
 public class ResponsesService implements LlmService {
 
     private final OpenAIClient client;
@@ -293,6 +288,7 @@ public class ResponsesService implements LlmService {
         StringBuilder llmResponse
     ) {
         var responseOutputItemStream = response.output().stream();
+        var followUpInputs = new ArrayList<ResponseInputItem>();
         responseOutputItemStream.forEach(responseOutput -> {
             if (responseOutput.isMessage()) {
                 llmResponse.append("\nMessage: \n");
@@ -313,38 +309,35 @@ public class ResponsesService implements LlmService {
                 var callId = responseOutput.asFunctionCall().callId();
                 log.info("Call id: {}", callId);
                 var fnName = responseOutput.asFunctionCall().name();
-
                 var argJson = responseOutput.asFunctionCall().arguments();
                 var toolResultJson = dispatcher.handleToolCall(fnName, argJson, threadId);
-                log.info("Tool result: {}", toolResultJson);
-                var followUpInputs = new ArrayList<ResponseInputItem>();
-                var fnCallItem = ResponseFunctionToolCall.builder()
-                    .name(fnName)
-                    .arguments(argJson)
-                    .callId(callId)
-                    .build();
 
-                followUpInputs.add(ResponseInputItem.ofFunctionCall(fnCallItem));
+                log.info("Tool result [{}]", toolResultJson);
+                followUpInputs.add(ResponseInputItem.ofFunctionCall(responseOutput.asFunctionCall()));
                 var fnOutputItem = ResponseInputItem.FunctionCallOutput.builder()
                     .callId(callId)
                     .output(toolResultJson)
                     .build();
 
                 followUpInputs.add(ResponseInputItem.ofFunctionCallOutput(fnOutputItem));
-                var toolDefinitions = getToolDefinitions();
-                var submitFunctionsResponse = client.responses().create(
-                    ResponseCreateParams.builder()
-                        .model(ASSISTANT_MODEL)
-                        .instructions(ASSISTANT_INSTRUCTIONS)
-                        .tools(toolDefinitions)
-                        .previousResponseId(response.id())
-                        .input(ResponseCreateParams.Input.ofResponse(followUpInputs))
-                        .build()
-                );
-                responsesTracker.track(threadId, submitFunctionsResponse.id());
-                handleResponseOutput(threadId, submitFunctionsResponse, llmResponse);
             }
+
         });
+
+        if (!followUpInputs.isEmpty()) {
+            var toolDefinitions = getToolDefinitions();
+            var submitFunctionsResponse = client.responses().create(
+                ResponseCreateParams.builder()
+                    .model(ASSISTANT_MODEL)
+                    .instructions(ASSISTANT_INSTRUCTIONS)
+                    .tools(toolDefinitions)
+                    .previousResponseId(response.id())
+                    .input(ResponseCreateParams.Input.ofResponse(followUpInputs))
+                    .build()
+            );
+            responsesTracker.track(threadId, submitFunctionsResponse.id());
+            handleResponseOutput(threadId, submitFunctionsResponse, llmResponse);
+        }
     }
 
     @NotNull

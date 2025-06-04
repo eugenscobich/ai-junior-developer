@@ -311,9 +311,13 @@ public class ResponsesService implements LlmService {
                 var fnName = responseOutput.asFunctionCall().name();
                 var argJson = responseOutput.asFunctionCall().arguments();
                 var toolResultJson = dispatcher.handleToolCall(fnName, argJson, threadId);
-
+                var fnCallItem = ResponseFunctionToolCall.builder()
+                    .name(fnName)
+                    .arguments(argJson)
+                    .callId(callId)
+                    .build();
                 log.info("Tool result [{}]", toolResultJson);
-                followUpInputs.add(ResponseInputItem.ofFunctionCall(responseOutput.asFunctionCall()));
+                followUpInputs.add(ResponseInputItem.ofFunctionCall(fnCallItem));
                 var fnOutputItem = ResponseInputItem.FunctionCallOutput.builder()
                     .callId(callId)
                     .output(toolResultJson)

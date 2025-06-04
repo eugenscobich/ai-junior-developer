@@ -1,4 +1,4 @@
-package ai.junior.developer.assistant;
+package ai.junior.developer.service.llm.assistant;
 
 import org.springframework.stereotype.Component;
 

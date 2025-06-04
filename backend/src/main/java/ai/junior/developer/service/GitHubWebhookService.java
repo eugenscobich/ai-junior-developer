@@ -1,12 +1,13 @@
 package ai.junior.developer.service;
 
-import static ai.junior.developer.assistant.AssistantContent.ASSISTANT_DESCRIPTION;
-import static ai.junior.developer.assistant.AssistantContent.ASSISTANT_INSTRUCTIONS;
-import static ai.junior.developer.assistant.AssistantContent.ASSISTANT_MODEL;
-import static ai.junior.developer.assistant.AssistantContent.ASSISTANT_NAME;
+import static ai.junior.developer.service.llm.assistant.AssistantContent.ASSISTANT_DESCRIPTION;
+import static ai.junior.developer.service.llm.assistant.AssistantContent.ASSISTANT_INSTRUCTIONS;
+import static ai.junior.developer.service.llm.assistant.AssistantContent.ASSISTANT_MODEL;
+import static ai.junior.developer.service.llm.assistant.AssistantContent.ASSISTANT_NAME;
 import static ai.junior.developer.service.JiraService.getReplayCommentBody;
 
-import ai.junior.developer.assistant.AssistantService;
+import ai.junior.developer.service.llm.LlmService;
+import ai.junior.developer.service.llm.assistant.AssistantService;
 import ai.junior.developer.config.ApplicationPropertiesConfig;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -32,7 +33,7 @@ public class GitHubWebhookService {
     private final ApplicationPropertiesConfig applicationPropertiesConfig;
     private final GitHubService gitHubService;
     private final ObjectMapper objectMapper;
-    private final AssistantService assistantService;
+    private final LlmService llmService;
 
     public void handleWebhook(String payload) throws Exception {
         log.info("Received webhook: {}", payload);
@@ -62,13 +63,7 @@ public class GitHubWebhookService {
                     String threadId = matcher.group(1);
                     if (threadId != null) {
                         log.info("Message: {} was added to thread id: {}", message, threadId);
-                        var assistant = assistantService.findOrCreateAssistant(
-                            AssistantService.buildAssistantParams(
-                                ASSISTANT_MODEL, ASSISTANT_NAME,
-                                ASSISTANT_DESCRIPTION, ASSISTANT_INSTRUCTIONS
-                            ), null);
-                        MDC.put("assistantId", assistant.id());
-                        MDC.put("threadId", threadId);
+                        llmService.continueAThread(threadId);
 
                         var finalPath = "";
                         if (lineNode != null && pathNode != null) {
@@ -79,10 +74,10 @@ public class GitHubWebhookService {
                         JsonNode prUrlNode = commentNode.get("pull_request_url");
                         JsonNode issueUrlNode = commentNode.get("issue_url");
                         var finalUrl = prUrlNode != null ? prUrlNode.textValue() : issueUrlNode.textValue();
-                        var myCommentId = gitHubService.addComment(finalUrl, commentId, getReplayCommentBody(assistant.id(), threadId), prUrlNode != null);
+                        var myCommentId = gitHubService.addComment(finalUrl, commentId, getReplayCommentBody(MDC.get("assistantId"), threadId), prUrlNode != null);
 
-                        var result = assistantService.executePrompt(finalPath, assistant.id(), threadId);
-                        gitHubService.addComment(finalUrl, myCommentId, result.get("assistantMessage"), prUrlNode != null);
+                        var result = llmService.executePrompt(finalPath, threadId);
+                        gitHubService.addComment(finalUrl, myCommentId, result, prUrlNode != null);
                     }
                 }
 

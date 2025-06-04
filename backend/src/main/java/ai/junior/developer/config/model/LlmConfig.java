@@ -6,8 +6,8 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class ToggleAiConfig {
+public class LlmConfig {
 
     @NotBlank
-    private Boolean assistant;
+    private String type;
 }

@@ -1,4 +1,4 @@
-package ai.junior.developer.assistant;
+package ai.junior.developer.service.llm.assistant;
 
 import ai.junior.developer.service.FilesService;
 import ai.junior.developer.service.GitHubService;

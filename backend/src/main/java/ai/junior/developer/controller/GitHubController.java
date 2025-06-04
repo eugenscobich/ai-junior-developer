@@ -2,7 +2,6 @@ package ai.junior.developer.controller;
 
 import ai.junior.developer.config.ApplicationPropertiesConfig;
 import ai.junior.developer.service.GitHubService;
-import ai.junior.developer.service.GitHubWebhookResponsesService;
 import ai.junior.developer.service.GitHubWebhookService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,28 +24,31 @@ public class GitHubController {
 
     private final GitHubService githubService;
     private final GitHubWebhookService githubWebhookService;
-    private final GitHubWebhookResponsesService gitHubWebhookResponsesService;
     private final ApplicationPropertiesConfig config;
-
 
     @Operation(summary = "Create a new Git pull request")
     @PostMapping("/pr")
-    public String createPullRequest(@RequestParam String title, @RequestParam String description, @RequestParam String threadId) throws IOException, InterruptedException {
+    public String createPullRequest(@RequestParam String title, @RequestParam String description, @RequestParam String threadId)
+        throws IOException, InterruptedException {
         githubService.createPullRequest(title, description, threadId);
         return "Pull request created.";
     }
 
     @Operation(summary = "Get Git pull request number by branch name")
     @GetMapping("/pr/id")
-    public Integer getPullRequestNumberByBranchName(@RequestParam String owner, @RequestParam String repo,
-                                    @RequestParam String branchName, @RequestParam String apiToken) throws IOException, InterruptedException {
+    public Integer getPullRequestNumberByBranchName(
+        @RequestParam String owner, @RequestParam String repo,
+        @RequestParam String branchName, @RequestParam String apiToken
+    ) throws IOException, InterruptedException {
         return githubService.getPullRequestNumberByBranchName(owner, repo, branchName, apiToken);
     }
 
     @Operation(summary = "Read comments from Git pull request")
     @GetMapping("/pr/comments")
-    public List<String> getComments(@RequestParam String owner, @RequestParam String repo,
-                                   @RequestParam Integer pullNumber, @RequestParam String apiToken) throws IOException, InterruptedException {
+    public List<String> getComments(
+        @RequestParam String owner, @RequestParam String repo,
+        @RequestParam Integer pullNumber, @RequestParam String apiToken
+    ) throws IOException, InterruptedException {
         return githubService.getComments(owner, repo, pullNumber, apiToken);
     }
 
@@ -55,10 +57,6 @@ public class GitHubController {
     public void webhook(@RequestBody String payload, @RequestHeader("X-Hub-Signature") String xHubSignature)
         throws Exception {
         githubWebhookService.validateRequest(payload, xHubSignature);
-        if(config.getToggleAi().getAssistant()) {
-            githubWebhookService.handleWebhook(payload);
-        } else {
-            gitHubWebhookResponsesService.handleWebhook(payload);
-        }
+        githubWebhookService.handleWebhook(payload);
     }
 }

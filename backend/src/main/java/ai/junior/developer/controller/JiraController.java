@@ -1,24 +1,12 @@
 package ai.junior.developer.controller;
 
 import ai.junior.developer.config.ApplicationPropertiesConfig;
-import ai.junior.developer.service.FilesService;
-import ai.junior.developer.service.JiraResponsesService;
 import ai.junior.developer.service.JiraService;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.util.List;
-
 import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -32,7 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class JiraController {
 
     private final JiraService jiraService;
-    private final JiraResponsesService jiraResponsesService;
     private final ApplicationPropertiesConfig config;
 
     @Operation(
@@ -50,10 +37,6 @@ public class JiraController {
     public void webhook(@RequestBody String requestBody, @RequestHeader("X-Hub-Signature") String xHubSignature)
             throws Exception {
         jiraService.validateRequest(requestBody, xHubSignature);
-        if (config.getToggleAi().getAssistant()) {
-            jiraService.webhook(requestBody);
-        } else {
-            jiraResponsesService.webhook(requestBody);
-        }
+        jiraService.webhook(requestBody);
     }
 }

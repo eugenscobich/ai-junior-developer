@@ -2,7 +2,7 @@ package ai.junior.developer.config;
 
 import ai.junior.developer.config.model.GithubConfig;
 import ai.junior.developer.config.model.JiraConfig;
-import ai.junior.developer.config.model.ToggleAiConfig;
+import ai.junior.developer.config.model.LlmConfig;
 import ai.junior.developer.config.model.WorkspaceConfig;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -24,5 +24,6 @@ public class ApplicationPropertiesConfig {
     private final GithubConfig github;
 
     @NestedConfigurationProperty
-    private final ToggleAiConfig toggleAi;
+    private final LlmConfig llm;
+
 }

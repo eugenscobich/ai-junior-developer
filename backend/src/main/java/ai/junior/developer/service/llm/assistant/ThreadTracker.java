@@ -1,5 +1,6 @@
-package ai.junior.developer.assistant;
+package ai.junior.developer.service.llm.assistant;
 
+import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -19,5 +20,13 @@ public class ThreadTracker {
 
     public synchronized Map<String, List<String>> getAllTracked() {
         return threadsByAssistant;
+    }
+
+    public String findAssistantId(String threadId) {
+        return threadsByAssistant.entrySet().stream()
+            .filter(entry -> entry.getValue().contains(threadId))
+            .findFirst()
+            .map(Map.Entry::getKey).orElse(null);
+
     }
 }

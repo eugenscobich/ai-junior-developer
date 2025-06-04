@@ -1,8 +1,8 @@
-package ai.junior.developer.assistant;
+package ai.junior.developer.service.llm.assistant;
 
 public class AssistantContent {
 
-    public final static String ASSISTANT_MODEL = "gpt-4o";
+    public final static String ASSISTANT_MODEL = "gpt-4.1";
     public final static String ASSISTANT_NAME = "AI Junior Developer";
     public final static String ASSISTANT_DESCRIPTION =
         "Assistant for professional software developers that is able to read and modify your files and perform tasks.";

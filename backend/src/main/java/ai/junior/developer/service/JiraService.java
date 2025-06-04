@@ -1,11 +1,6 @@
 package ai.junior.developer.service;
 
-import static ai.junior.developer.assistant.AssistantContent.ASSISTANT_DESCRIPTION;
-import static ai.junior.developer.assistant.AssistantContent.ASSISTANT_INSTRUCTIONS;
-import static ai.junior.developer.assistant.AssistantContent.ASSISTANT_NAME;
-
-import ai.junior.developer.assistant.AssistantService;
-import ai.junior.developer.assistant.ThreadTracker;
+import ai.junior.developer.service.llm.LlmService;
 import ai.junior.developer.config.ApplicationPropertiesConfig;
 import ai.junior.developer.service.model.JiraCommentsResponse;
 import ai.junior.developer.service.model.JiraCommentsResponse.Comment;
@@ -18,14 +13,12 @@ import com.atlassian.adf.markdown.MarkdownParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.openai.models.beta.threads.Thread;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HexFormat;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -51,8 +44,7 @@ public class JiraService {
 
     private final RestTemplate jiraRestTemplate;
     private final ObjectMapper objectMapper;
-    private final AssistantService assistantService;
-    private final ThreadTracker threadTracker;
+    private final LlmService llmService;
 
     @Async
     public void webhook(String requestBody) throws Exception {
@@ -61,57 +53,46 @@ public class JiraService {
         String issueKey = jiraWebhookEvent.getIssue().getKey();
 
         var issueDetails = getIssueDetails(issueKey);
-        var threadId = issueDetails.getFields().getExtras().get(applicationPropertiesConfig.getJira().getTreadIdCustomFieldName());
-        var openAiModel = issueDetails.getFields().getExtras().get(applicationPropertiesConfig.getJira().getOpenAiModelCustomFieldName());
-        var model = ((LinkedHashMap) openAiModel).get("value").toString();
-        var assistant = assistantService.findOrCreateAssistant(
-            AssistantService.buildAssistantParams(
-                model, ASSISTANT_NAME,
-                ASSISTANT_DESCRIPTION, ASSISTANT_INSTRUCTIONS
-            ), model
-        );
-        MDC.put("assistantId", assistant.id());
+        var threadIdFieldValue = issueDetails.getFields().getExtras().get(applicationPropertiesConfig.getJira().getTreadIdCustomFieldName());
+
         if (jiraWebhookEvent.getWebhookEvent().equals("jira:issue_updated")) {
             if (jiraWebhookEvent.getChangelog() != null && !jiraWebhookEvent.getChangelog().getItems().isEmpty()) {
                 Optional<Item> assignee = jiraWebhookEvent.getChangelog().getItems().stream().filter(item -> item
                     .getFieldId().equals("assignee")).findFirst();
                 if (assignee.isPresent()) {
                     if (assignee.get().getTo() != null && assignee.get().getTo().equals(applicationPropertiesConfig.getJira().getUserId())
-                        && threadId == null) {
+                        && threadIdFieldValue == null) {
                         log.info("Ticket was assigned to AI Junior Developer");
-
-                        Thread thread = assistantService.createThread();
-                        threadTracker.track(assistant.id(), thread.id());
-                        MDC.put("threadId", thread.id());
-                        updateFields(issueKey, Map.of(applicationPropertiesConfig.getJira().getTreadIdCustomFieldName(), thread.id()));
+                        var threadId = llmService.startAThread();
+                        updateFields(issueKey, Map.of(applicationPropertiesConfig.getJira().getTreadIdCustomFieldName(), threadId));
 
                         addComment(
                             issueKey,
-                            getReplayCommentBody(assistant.id(), thread.id())
+                            getReplayCommentBody(MDC.get("assistantId"), threadId)
                         );
-                        var result = assistantService.executePrompt(
+                        var result = llmService.executePrompt(
                             "Issue key: " + issueKey + "\n"
                                 + "Task title: " + issueKey + "-" + jiraWebhookEvent.getIssue().getFields().getSummary() + "\n"
-                                + "Task: " + jiraWebhookEvent.getIssue().getFields().getDescription(), assistant.id(), thread.id()
+                                + "Task: " + jiraWebhookEvent.getIssue().getFields().getDescription(),
+                            threadId
                         );
 
-                        addComment(issueKey, result.get("assistantMessage"));
+                        addComment(issueKey, result);
                     }
                 }
             }
         } else if (jiraWebhookEvent.getWebhookEvent().equals("comment_updated") || jiraWebhookEvent.getWebhookEvent().equals("comment_created")) {
-            log.info("Comment is added to ticket that have trace id {}", threadId);
+            log.info("Comment is added to ticket that have trace id {}", threadIdFieldValue);
             User assignee = issueDetails.getFields().getAssignee();
             if (assignee != null
-                && threadId != null
+                && threadIdFieldValue != null
                 && !Objects.equals(jiraWebhookEvent.getComment().getAuthor().getAccountId(), applicationPropertiesConfig.getJira().getUserId())
                 && assignee.getAccountId().equals(applicationPropertiesConfig.getJira().getUserId())
             ) {
                 log.info("Comment is addressed to ai-junior-developer");
-                var result = assistantService.executePrompt(jiraWebhookEvent.getComment().getBody(), assistant.id(), threadId.toString());
-                addComment(issueKey, result.get("assistantMessage"));
+                var result = llmService.executePrompt(jiraWebhookEvent.getComment().getBody(), threadIdFieldValue.toString());
+                addComment(issueKey, result);
             }
-
         }
     }
 

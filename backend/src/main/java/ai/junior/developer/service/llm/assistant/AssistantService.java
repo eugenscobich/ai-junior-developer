@@ -1,8 +1,13 @@
-package ai.junior.developer.assistant;
+package ai.junior.developer.service.llm.assistant;
 
-import static ai.junior.developer.assistant.AssistantContent.ASSISTANT_FUNCTIONS;
+import static ai.junior.developer.service.llm.assistant.AssistantContent.ASSISTANT_DESCRIPTION;
+import static ai.junior.developer.service.llm.assistant.AssistantContent.ASSISTANT_FUNCTIONS;
+import static ai.junior.developer.service.llm.assistant.AssistantContent.ASSISTANT_INSTRUCTIONS;
+import static ai.junior.developer.service.llm.assistant.AssistantContent.ASSISTANT_MODEL;
+import static ai.junior.developer.service.llm.assistant.AssistantContent.ASSISTANT_NAME;
 import static com.openai.models.beta.threads.messages.Message.Role.Value.ASSISTANT;
 
+import ai.junior.developer.service.llm.LlmService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openai.client.OpenAIClient;
@@ -25,7 +30,6 @@ import com.openai.models.beta.threads.runs.RunCreateParams;
 import com.openai.models.beta.threads.runs.RunRetrieveParams;
 import com.openai.models.beta.threads.runs.RunStatus;
 import com.openai.models.beta.threads.runs.RunSubmitToolOutputsParams;
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -39,26 +43,31 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class AssistantService {
+@ConditionalOnProperty(name = "service.llm.type", havingValue = "assistant", matchIfMissing = true)
+public class AssistantService implements LlmService {
 
     private final OpenAIClient client;
     private final ToolDispatcher dispatcher;
     private final RunIdTracker runIdTracker;
+    private final ThreadTracker threadTracker;
 
-    public Assistant createAssistant(AssistantCreateParams.Builder builder) throws IOException {
+    private Assistant createAssistant(AssistantCreateParams.Builder builder) throws IOException {
 
         ObjectMapper mapper = new ObjectMapper();
 
-        List<Map<String, Object>> functions = mapper.readValue(ASSISTANT_FUNCTIONS,
-                new TypeReference<>() {
-                }
+        List<Map<String, Object>> functions = mapper.readValue(
+            ASSISTANT_FUNCTIONS,
+            new TypeReference<>() {
+            }
         );
 
         List<FunctionDefinition> toolDefs = new ArrayList<>();
@@ -74,14 +83,14 @@ public class AssistantService {
             }
 
             FunctionParameters parameters = FunctionParameters.builder()
-                    .additionalProperties(paramJson)
-                    .build();
+                .additionalProperties(paramJson)
+                .build();
 
             toolDefs.add(FunctionDefinition.builder()
-                    .name(name)
-                    .description(description)
-                    .parameters(parameters)
-                    .build());
+                .name(name)
+                .description(description)
+                .parameters(parameters)
+                .build());
         }
 
         for (FunctionDefinition fn : toolDefs) {
@@ -94,23 +103,23 @@ public class AssistantService {
         return assistant;
     }
 
-    public void deleteAssistant(String assistantId) {
+    private void deleteAssistant(String assistantId) {
         client.beta().assistants().delete(AssistantDeleteParams.builder()
-                .assistantId(assistantId)
-                .build());
+            .assistantId(assistantId)
+            .build());
     }
 
-    public Map<String, String> executePrompt(String prompt, String assistantId, String threadId) throws Exception {
+    private Map<String, String> executePrompt(String prompt, String assistantId, String threadId) throws Exception {
         client.beta().threads().messages().create(MessageCreateParams.builder()
-                .threadId(threadId)
-                .role(MessageCreateParams.Role.USER)
-                .content(prompt)
-                .build());
+            .threadId(threadId)
+            .role(MessageCreateParams.Role.USER)
+            .content(prompt)
+            .build());
 
         Run run = client.beta().threads().runs().create(RunCreateParams.builder()
-                .threadId(threadId)
-                .assistantId(assistantId)
-                .build());
+            .threadId(threadId)
+            .assistantId(assistantId)
+            .build());
         MDC.put("runId", run.id());
         runIdTracker.track(run.id(), prompt);
         log.info("Run id: {}", run.id());
@@ -126,13 +135,13 @@ public class AssistantService {
             }
 
             run = client.beta().threads().runs().retrieve(RunRetrieveParams.builder()
-                    .threadId(run.threadId())
-                    .runId(run.id())
-                    .build());
+                .threadId(run.threadId())
+                .runId(run.id())
+                .build());
 
             if (RunStatus.REQUIRES_ACTION.equals(run.status())) {
                 Run.RequiredAction requiredAction = run.requiredAction()
-                        .orElseThrow(() -> new IllegalStateException("Run requires action but none found."));
+                    .orElseThrow(() -> new IllegalStateException("Run requires action but none found."));
 
                 Run.RequiredAction.SubmitToolOutputs submitToolOutputs = requiredAction.submitToolOutputs();
                 if (submitToolOutputs == null) {
@@ -149,61 +158,63 @@ public class AssistantService {
                     String result = dispatcher.handleToolCall(functionName, argumentsJson, threadId);
 
                     toolOutputs.add(RunSubmitToolOutputsParams.ToolOutput.builder()
-                            .toolCallId(toolCall.id())
-                            .output(result.substring(0, Math.min(1000000, result.length())))
-                            .build());
+                        .toolCallId(toolCall.id())
+                        .output(result.substring(0, Math.min(1000000, result.length())))
+                        .build());
                 }
 
                 client.beta().threads().runs().submitToolOutputs(RunSubmitToolOutputsParams.builder()
-                        .threadId(run.threadId())
-                        .runId(run.id())
-                        .toolOutputs(toolOutputs)
-                        .build());
+                    .threadId(run.threadId())
+                    .runId(run.id())
+                    .toolOutputs(toolOutputs)
+                    .build());
 
             }
             if (Set.of(
-                    RunStatus.COMPLETED,
-                    RunStatus.FAILED,
-                    RunStatus.CANCELLED,
-                    RunStatus.EXPIRED
+                RunStatus.COMPLETED,
+                RunStatus.FAILED,
+                RunStatus.CANCELLED,
+                RunStatus.EXPIRED
             ).contains(run.status())) {
                 break;
             }
         }
 
         List<Message> messages = client.beta().threads().messages().list(MessageListParams.builder()
-                        .threadId(threadId)
-                        .build())
-                .data();
+                .threadId(threadId)
+                .build())
+            .data();
         //log.info(messages.toString());
 
         String assistantMessage = messages.stream()
-                .filter(m -> m.role().value().equals(ASSISTANT))
-                .map(Message::content)
-                .flatMap(Collection::stream)
-                .map(MessageContent::text)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .map(TextContentBlock::text)
-                .map(Text::value)
-                .collect(Collectors.joining(" "));
+            .filter(m -> m.role().value().equals(ASSISTANT))
+            .map(Message::content)
+            .flatMap(Collection::stream)
+            .map(MessageContent::text)
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .map(TextContentBlock::text)
+            .map(Text::value)
+            .collect(Collectors.joining(" "));
         return Map.of(
-                "runId", run.id(), 
-                "assistantMessage", assistantMessage);
+            "runId", run.id(),
+            "assistantMessage", assistantMessage
+        );
     }
 
-    public Thread createThread() {
+    private Thread createThread() {
         Thread thread = client.beta().threads().create();
         log.info("Thread id: {}", thread.id());
+
         return thread;
     }
 
-    public Assistant findOrCreateAssistant(AssistantCreateParams.Builder assistantParams, String assistantModel) throws IOException {
+    private Assistant findOrCreateAssistant(AssistantCreateParams.Builder assistantParams, String assistantModel) throws IOException {
         String storedHashCreatedAssistant = assistantParams.build().metadata()
-                .map(AssistantCreateParams.Metadata::_additionalProperties)
-                .map(props -> props.get("instructionHash"))
-                .map(JsonValue::asStringOrThrow)
-                .orElse(null);
+            .map(AssistantCreateParams.Metadata::_additionalProperties)
+            .map(props -> props.get("instructionHash"))
+            .map(JsonValue::asStringOrThrow)
+            .orElse(null);
         Assistant assistant = findAssistant(assistantParams.build()._name().asStringOrThrow(), storedHashCreatedAssistant, assistantModel);
 
         if (assistant == null) {
@@ -212,36 +223,38 @@ public class AssistantService {
         return assistant;
     }
 
-    public Assistant findAssistant(String assistantName, String hash, String assistantModel) {
+    private Assistant findAssistant(String assistantName, String hash, String assistantModel) {
         return client.beta().assistants().list().data().stream()
-                .filter(assistant -> assistant.name().isPresent() && assistant.name().get().equals(assistantName))
-                .filter(assistant -> hash.equals(
-                        assistant.metadata()
-                                .map(Assistant.Metadata::_additionalProperties)
-                                .map(props -> props.get("instructionHash"))
-                                .map(JsonValue::asStringOrThrow)
-                                .orElse(null)))
-                .filter(assistant -> assistantModel == null || assistant.model().equals(assistantModel))
-                .findFirst()
-                .orElse(null);
+            .filter(assistant -> assistant.name().isPresent() && assistant.name().get().equals(assistantName))
+            .filter(assistant -> hash.equals(
+                assistant.metadata()
+                    .map(Assistant.Metadata::_additionalProperties)
+                    .map(props -> props.get("instructionHash"))
+                    .map(JsonValue::asStringOrThrow)
+                    .orElse(null)))
+            .filter(assistant -> assistantModel == null || assistant.model().equals(assistantModel))
+            .findFirst()
+            .orElse(null);
     }
 
-    public static AssistantCreateParams.Builder buildAssistantParams(String assistantModel, String assistantName,
-                                                               String assistantDescription, String assistantInstructions) {
+    private static AssistantCreateParams.Builder buildAssistantParams(
+        String assistantModel, String assistantName,
+        String assistantDescription, String assistantInstructions
+    ) {
         String hash = hashInstructions(assistantInstructions);
 
         Map<String, JsonValue> metadataMap = Map.of(
-                "instructionHash", JsonValue.from(hash)
+            "instructionHash", JsonValue.from(hash)
         );
 
         return AssistantCreateParams.builder()
-                .model(assistantModel)
-                .name(assistantName)
-                .description(assistantDescription)
-                .instructions(assistantInstructions)
-                .metadata(AssistantCreateParams.Metadata.builder()
-                        .additionalProperties(metadataMap)
-                        .build());
+            .model(assistantModel)
+            .name(assistantName)
+            .description(assistantDescription)
+            .instructions(assistantInstructions)
+            .metadata(AssistantCreateParams.Metadata.builder()
+                .additionalProperties(metadataMap)
+                .build());
     }
 
     private static String hashInstructions(String instructions) {
@@ -256,5 +269,38 @@ public class AssistantService {
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("Hashing failed", e);
         }
+    }
+
+    @Override
+    @SneakyThrows
+    public String startAThread() {
+        var assistant = findOrCreateAssistant(
+            AssistantService.buildAssistantParams(
+                ASSISTANT_MODEL, ASSISTANT_NAME,
+                ASSISTANT_DESCRIPTION, ASSISTANT_INSTRUCTIONS
+            ), ASSISTANT_MODEL
+        );
+        MDC.put("assistantId", assistant.id());
+        Thread thread = createThread();
+        threadTracker.track(assistant.id(), thread.id());
+        MDC.put("threadId", thread.id());
+        return thread.id();
+    }
+
+    @Override
+    public void continueAThread(String threadId) {
+        MDC.put("threadId", threadId);
+        var assistantId = threadTracker.findAssistantId(threadId);
+        MDC.put("assistantId", assistantId);
+    }
+
+    @Override
+    @SneakyThrows
+    public String executePrompt(String prompt, String threadId) {
+        var assistantId = threadTracker.findAssistantId(threadId);
+        Map<String, String> result = executePrompt(prompt, assistantId, threadId);
+        var runId = result.get("runId");
+        runIdTracker.track(runId, prompt);
+        return result.get("assistantMessage");
     }
 }

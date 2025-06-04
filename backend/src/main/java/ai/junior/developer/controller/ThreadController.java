@@ -1,6 +1,6 @@
 package ai.junior.developer.controller;
 
-import ai.junior.developer.assistant.RunIdTracker;
+import ai.junior.developer.service.llm.assistant.RunIdTracker;
 import ai.junior.developer.config.ApplicationPropertiesConfig;
 import ai.junior.developer.log.LogbackAppender;
 import ai.junior.developer.service.ThreadService;
@@ -39,12 +39,7 @@ public class ThreadController {
     @GetMapping("/api/messages/{threadId}")
     public ResponseEntity<MessagesResponse> getMessages(@PathVariable String threadId) throws IOException {
         MessagesResponse messages;
-        if (config.getToggleAi().getAssistant()) {
-            messages = threadService.getMessages(threadId);
-        } else {
-
-            messages = threadService.getMessagesFromResponses(threadId);
-        }
+        messages = threadService.getMessages(threadId);
         return ResponseEntity.ok(messages);
     }
 
@@ -57,22 +52,14 @@ public class ThreadController {
     @GetMapping("/api/logs")
     public ResponseEntity<Map<String, Queue<String>>> getLogs() throws Exception {
         Map<String, Queue<String>> logs;
-        if (config.getToggleAi().getAssistant()) {
-            logs = logbackAppender.getLogMessages();
-        } else {
-            logs = threadService.getFunctionCall();
-        }
+        logs = logbackAppender.getLogMessages();
         return ResponseEntity.ok(logs);
     }
 
     @PostMapping("/api/prompt/thread")
     public ResponseEntity<Map<String, String>> sendPromptToExistingThread(@RequestBody PromptRequest request) throws Exception {
         Map<String, String> response;
-        if (config.getToggleAi().getAssistant()) {
-            response = threadService.sendPromptToExistingThread(request);
-        } else {
-            response = threadService.sendPromptToResponses(request);
-        }
+        response = threadService.sendPromptToExistingThread(request);
         return ResponseEntity.ok(response);
     }
 }

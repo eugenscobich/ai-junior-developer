@@ -328,9 +328,12 @@ public class ResponsesService implements LlmService {
                     .build();
 
                 followUpInputs.add(ResponseInputItem.ofFunctionCallOutput(fnOutputItem));
+                var toolDefinitions = getToolDefinitions();
                 var submitFunctionsResponse = client.responses().create(
                     ResponseCreateParams.builder()
                         .model(ASSISTANT_MODEL)
+                        .instructions(ASSISTANT_INSTRUCTIONS)
+                        .tools(toolDefinitions)
                         .previousResponseId(response.id())
                         .input(ResponseCreateParams.Input.ofResponse(followUpInputs))
                         .build()

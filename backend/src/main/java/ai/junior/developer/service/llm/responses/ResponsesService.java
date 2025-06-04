@@ -253,9 +253,9 @@ public class ResponsesService implements LlmService {
         var metadata = getMetadata(threadId);
         var llmResponse = new StringBuilder();
         final Response response;
+        var toolDefinitions = getToolDefinitions();
         if (previousResponsesId == null) {
             log.info("Strat new conversation for thread id: {}", threadId);
-            var toolDefinitions = getToolDefinitions();
             response = client.responses().create(
                 ResponseCreateParams.builder()
                     .model(ASSISTANT_MODEL)
@@ -269,6 +269,9 @@ public class ResponsesService implements LlmService {
             log.info("Continue the conversation for thread id: {} and previous response id: {}", threadId, previousResponsesId);
             response = client.responses().create(
                 ResponseCreateParams.builder()
+                    .model(ASSISTANT_MODEL)
+                    //.instructions(ASSISTANT_INSTRUCTIONS)
+                    //.tools(toolDefinitions)
                     .previousResponseId(previousResponsesId)
                     .input(ResponseCreateParams.Input.ofText(prompt))
                     .metadata(metadata)
@@ -333,8 +336,8 @@ public class ResponsesService implements LlmService {
             var submitFunctionsResponse = client.responses().create(
                 ResponseCreateParams.builder()
                     .model(ASSISTANT_MODEL)
-                    .instructions(ASSISTANT_INSTRUCTIONS)
-                    .tools(toolDefinitions)
+                    //.instructions(ASSISTANT_INSTRUCTIONS)
+                    //.tools(toolDefinitions)
                     .previousResponseId(response.id())
                     .input(ResponseCreateParams.Input.ofResponse(followUpInputs))
                     .build()

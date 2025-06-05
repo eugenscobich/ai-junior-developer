@@ -28,7 +28,7 @@ public class ResponsesTracker {
 
     public synchronized String getLastTrackedResponseId(String threadId) {
         List<ResponsesThreadTracker> responsesThreadTrackers = responsesThreadTrakerMap.get(threadId);
-        if (responsesThreadTrackers == null) {
+        if (responsesThreadTrackers == null || responsesThreadTrackers.isEmpty()) {
             return null;
         } else {
             return responsesThreadTrackers.getLast().getResponsesIds().isEmpty() ?

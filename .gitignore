@@ -5,3 +5,5 @@
 /frontend/package-lock.json
 /frontend/build/
 /frontend/target/
+/backend/src/main/resources/static/static/
+/backend/src/main/resources/static/asset-manifest.json

@@ -10,6 +10,7 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Builder
 public class MessageResponse {
-    public UserOrAssistantMessageResponse userMessage ;
+    public String runId;
+    public UserOrAssistantMessageResponse userMessage;
     public List<UserOrAssistantMessageResponse> assistantMessages;
 }

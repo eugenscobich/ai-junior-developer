@@ -8,6 +8,9 @@ import static ai.junior.developer.service.llm.assistant.AssistantContent.ASSISTA
 import static com.openai.models.beta.threads.messages.Message.Role.Value.ASSISTANT;
 
 import ai.junior.developer.service.llm.LlmService;
+import ai.junior.developer.service.model.MessageResponse;
+import ai.junior.developer.service.model.MessagesResponse;
+import ai.junior.developer.service.model.UserOrAssistantMessageResponse;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openai.client.OpenAIClient;
@@ -36,7 +39,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -302,5 +307,62 @@ public class AssistantService implements LlmService {
         var runId = result.get("runId");
         runIdTracker.track(runId, prompt);
         return result.get("assistantMessage");
+    }
+
+    @Override
+    public void getLastThreadId() {
+
+    }
+
+    @Override
+    public MessagesResponse getThreadMessages(String threadId) {
+        List<Message> allMessages = client.beta().threads().messages().list(
+            MessageListParams.builder().threadId(threadId).build()).data();
+
+        allMessages.sort(Comparator.comparing(Message::createdAt));
+
+        Map<String, MessageResponse> groupedMessages = new LinkedHashMap<>();
+        String currentUserMessageId = null;
+
+        for (Message msg : allMessages) {
+            String value = msg.content().stream()
+                .map(c -> c.text()
+                    .map(TextContentBlock::text)
+                    .map(Text::value)
+                    .orElse("[empty]"))
+                .collect(Collectors.joining("\n"));
+
+            UserOrAssistantMessageResponse messageDto = UserOrAssistantMessageResponse.builder()
+                .value(value)
+                .createdAt(msg.createdAt())
+                .threadId(msg.threadId())
+                .runId(msg.runId().isPresent() ? msg.runId().get() : null)
+                .build();
+
+            switch (msg.role().value()) {
+                case USER -> {
+                    currentUserMessageId = msg.id();
+                    MessageResponse response = MessageResponse.builder()
+                        .userMessage(messageDto)
+                        .assistantMessages(new ArrayList<>())
+                        .build();
+                    groupedMessages.put(currentUserMessageId, response);
+                }
+                case ASSISTANT -> {
+                    if (currentUserMessageId != null) {
+                        groupedMessages.get(currentUserMessageId).getAssistantMessages().add(messageDto);
+                    } else {
+                        log.warn("no user message before: {}", msg);
+                    }
+                }
+                default -> {
+                    log.warn("Unhandled role: {}", msg.role());
+                }
+            }
+        }
+
+        return MessagesResponse.builder()
+            .messagesList(new ArrayList<>(groupedMessages.values()))
+            .build();
     }
 }

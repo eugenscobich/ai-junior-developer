@@ -24,7 +24,7 @@ public class ToolDispatcher {
     private final ObjectMapper mapper = new ObjectMapper();
 
     public String handleToolCall(String functionName, String argsJson, String threadId) {
-        log.info("Call function: {}", functionName);
+        log.debug("Call function: {}", functionName);
         try {
             Map<String, Object> args = mapper.readValue(
                 argsJson, new TypeReference<>() {

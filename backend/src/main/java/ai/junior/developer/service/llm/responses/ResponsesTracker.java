@@ -36,9 +36,13 @@ public class ResponsesTracker {
         }
     }
 
+    public List<ResponsesThreadTracker> getThreadDetails(String threadId) {
+        return responsesThreadTrakerMap.get(threadId);
+    }
+
     @Value
     @Builder
-    private static class ResponsesThreadTracker {
+    public static class ResponsesThreadTracker {
         String runId;
         @Builder.Default
         List<String> responsesIds = new ArrayList<>();

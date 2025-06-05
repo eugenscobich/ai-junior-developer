@@ -6,6 +6,8 @@ import static ai.junior.developer.service.llm.assistant.AssistantContent.RESPONS
 
 import ai.junior.developer.service.llm.LlmService;
 import ai.junior.developer.service.llm.assistant.ToolDispatcher;
+import ai.junior.developer.service.llm.responses.ResponsesTracker.ResponsesThreadTracker;
+import ai.junior.developer.service.model.MessagesResponse;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openai.client.OpenAIClient;
@@ -17,6 +19,7 @@ import com.openai.models.responses.ResponseCreateParams.Metadata;
 import com.openai.models.responses.ResponseFunctionToolCall;
 import com.openai.models.responses.ResponseInputItem;
 import com.openai.models.responses.ResponseReasoningItem.Summary;
+import com.openai.models.responses.ResponseRetrieveParams;
 import com.openai.models.responses.Tool;
 import java.util.ArrayList;
 import java.util.List;
@@ -72,6 +75,8 @@ public class ResponsesService implements LlmService {
                     .metadata(metadata)
                     .build()
             );
+
+
         } else {
             log.info("Continue the conversation for thread id: {} and previous response id: {}", threadId, previousResponsesId);
             response = client.responses().create(
@@ -89,6 +94,20 @@ public class ResponsesService implements LlmService {
         handleResponseOutput(threadId, runId, response, llmResponse);
 
         return llmResponse.toString();
+    }
+
+    @Override
+    public void getLastThreadId() {
+
+    }
+
+    @Override
+    public MessagesResponse getThreadMessages(String threadId) {
+        List<ResponsesThreadTracker> threadDetails = responsesTracker.getThreadDetails(threadId);
+
+
+
+        return null;
     }
 
     private void handleResponseOutput(

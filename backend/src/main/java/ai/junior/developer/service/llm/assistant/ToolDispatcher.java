@@ -48,7 +48,7 @@ public class ToolDispatcher {
                     String filePath = (String) args.get("filePath");
                     String content = (String) args.get("fileContent");
                     filesService.writeFile(filePath, content, threadId);
-                    yield "File written successfully: " + filePath;
+                    yield "File written successfully: " + filePath + ".";
                 }
 
                 case "replaceInFile" -> {
@@ -56,28 +56,28 @@ public class ToolDispatcher {
                     String from = (String) args.get("from");
                     String to = (String) args.get("to");
                     filesService.replaceInFile(filePath, from, to, threadId);
-                    yield "File content replaced successfully: " + filePath;
+                    yield "File content replaced successfully: " + filePath + ".";
                 }
 
                 case "cloneRepository" -> {
                     gitService.cloneRepository((String) args.get("repoUrl"), threadId);
-                    yield "Repository cloned: " + args.get("repoUrl");
+                    yield "Repository cloned: " + args.get("repoUrl") + ".";
                 }
 
                 case "createBranch" -> {
                     gitService.createBranch((String) args.get("branchName"), threadId);
-                    yield "Branch created: " + args.get("branchName");
+                    yield "Branch created: " + args.get("branchName") + ".";
                 }
 
                 case "reset" -> {
                     gitService.resetCurrentBranch(threadId);
-                    yield "Current branch was reset";
+                    yield "Current branch was reset.";
                 }
 
                 case "resetAFile" -> {
                     String filePath = (String) args.getOrDefault("filePath", null);
                     gitService.resetAFile(filePath, threadId);
-                    yield "File " + filePath + " was reset";
+                    yield "File " + filePath + " was reset.";
                 }
 
                 case "addFiles" -> {
@@ -93,7 +93,7 @@ public class ToolDispatcher {
 
                 case "commit" -> {
                     gitService.commit((String) args.get("message"), threadId);
-                    yield "Committed with message: " + args.get("message");
+                    yield "Committed with message: " + args.get("message") + ".";
                 }
 
                 case "push" -> {
@@ -116,7 +116,7 @@ public class ToolDispatcher {
             };
         } catch (Exception e) {
             log.error(e.getMessage(), e);
-            return "Error executing function " + functionName + ": " + e.getMessage();
+            return "Error executing function " + functionName + ": " + e.getMessage() + ".";
         }
     }
 }

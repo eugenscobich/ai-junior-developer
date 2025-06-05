@@ -2,7 +2,8 @@ package ai.junior.developer.service.llm.responses;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
+import lombok.Builder;
+import lombok.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -10,22 +11,36 @@ import java.util.List;
 
 @Component
 public class ResponsesTracker {
-    private final Map<String, List<String>> responsesTrakerMap = new HashMap<>();
+    private final Map<String, List<ResponsesThreadTracker>> responsesThreadTrakerMap = new HashMap<>();
 
     public synchronized void addAThread(String threadId) {
-        responsesTrakerMap.computeIfAbsent(threadId, k -> new ArrayList<>());
+        responsesThreadTrakerMap.computeIfAbsent(threadId, k -> new ArrayList<>());
     }
 
-    public synchronized void track(String threadId, String responsesId) {
-        responsesTrakerMap.computeIfAbsent(threadId, k -> new ArrayList<>()).add(responsesId);
-    }
+    public synchronized void track(String threadId, String runId, String responsesId) {
+        var responsesThreadTracker = responsesThreadTrakerMap.get(threadId).stream()
+            .filter(rtt -> rtt.getRunId().equals(runId)).findFirst()
+            .orElseGet(() -> ResponsesThreadTracker.builder()
+                .build());
 
-    public synchronized List<String> getAllTrackedResponsesId(String threadId) {
-        return responsesTrakerMap.get(threadId);
+        responsesThreadTracker.getResponsesIds().add(responsesId);
     }
 
     public synchronized String getLastTrackedResponseId(String threadId) {
-        var responsesList = getAllTrackedResponsesId(threadId);
-        return !responsesList.isEmpty() ? responsesList.getLast() : null;
+        List<ResponsesThreadTracker> responsesThreadTrackers = responsesThreadTrakerMap.get(threadId);
+        if (responsesThreadTrackers == null) {
+            return null;
+        } else {
+            return responsesThreadTrackers.getLast().getResponsesIds().isEmpty() ?
+                null : responsesThreadTrackers.getLast().getResponsesIds().getLast();
+        }
+    }
+
+    @Value
+    @Builder
+    private static class ResponsesThreadTracker {
+        String runId;
+        @Builder.Default
+        List<String> responsesIds = new ArrayList<>();
     }
 }

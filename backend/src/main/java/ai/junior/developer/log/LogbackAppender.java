@@ -1,5 +1,6 @@
 package ai.junior.developer.log;
 
+import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.ILoggingEvent;
@@ -25,7 +26,7 @@ public class LogbackAppender extends AppenderBase<ILoggingEvent> {
         var threadId = event.getMDCPropertyMap().get("threadId");
         var runId = event.getMDCPropertyMap().get("runId");
 
-        if (threadId != null && runId != null) {
+        if (threadId != null && runId != null && event.getLevel().toInt() >= Level.INFO.toInt()) {
             String formattedMessage = event.getFormattedMessage();
             logMessages.computeIfAbsent(threadId + "_" + runId, k -> new ConcurrentLinkedQueue<>()).add(formattedMessage);
         }

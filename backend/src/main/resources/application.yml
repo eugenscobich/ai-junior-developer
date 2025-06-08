@@ -22,7 +22,7 @@ service:
     webhook-secret: change-me
     user-id: 210500703
   llm:
-    type: assistant
+    type: responses
 
 logging:
   pattern:

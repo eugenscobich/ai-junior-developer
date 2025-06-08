@@ -1,7 +1,9 @@
 package ai.junior.developer.service;
 
 import ai.junior.developer.service.llm.LlmService;
+import ai.junior.developer.service.llm.assistant.RunIdTracker;
 import ai.junior.developer.service.llm.assistant.ThreadTracker;
+import ai.junior.developer.service.llm.responses.ResponsesService;
 import ai.junior.developer.service.llm.responses.ResponsesTracker;
 import ai.junior.developer.service.model.*;
 import com.openai.client.OpenAIClient;
@@ -14,6 +16,7 @@ import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 import com.openai.models.beta.threads.messages.TextContentBlock;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -22,37 +25,17 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class ThreadService {
 
-    private final OpenAIClient client;
     private final LlmService llmService;
-    private final ThreadTracker threadTracker;
-    private final ResponsesTracker responsesTracker;
 
     public ThreadsResponse getThreads() {
-
-        llmService.getLastThreadId();
-
-        Map<String, List<String>> activeThread = threadTracker.getAllTracked();
-        System.out.println("activeThread " + activeThread);
-        ThreadsResponse tracked = activeThread.entrySet().stream()
-                .filter(entry -> !entry.getValue().isEmpty())
-                .map(entry -> ThreadsResponse.builder()
-                        .assistantId(entry.getKey())
-                        .threadId(entry.getValue().get(0))
-                        .build())
-                .findFirst().get();
-
-        return tracked;
+        return llmService.getLastThread();
     }
 
-    public MessagesResponse getMessages(String threadId) {
+    public MessagesResponse getMessages(String threadId) throws IOException {
         return llmService.getThreadMessages(threadId);
     }
 
-    public Map<String, String> sendPromptToExistingThread(PromptRequest request) {
-        MDC.put("assistantId", request.getAssistantId());
-        MDC.put("threadId", request.getThreadId());
-        String executePrompt = llmService.executePrompt(request.getPrompt(), request.getThreadId());
-        return Map.of("assistant_message", executePrompt);
+    public Map<String, String> sendPromptToExistingThread(PromptRequest request) throws Exception {
+        return llmService.sendPromptToExistingThread(request);
     }
-
 }

@@ -70,7 +70,7 @@ public class JiraService {
                             issueKey,
                             getReplayCommentBody(MDC.get("assistantId"), threadId)
                         );
-                        var result = llmService.executePrompt(
+                        var result = llmService.executeLlmPrompt(
                             "Issue key: " + issueKey + "\n"
                                 + "Task title: " + issueKey + "-" + jiraWebhookEvent.getIssue().getFields().getSummary() + "\n"
                                 + "Task: " + jiraWebhookEvent.getIssue().getFields().getDescription(),
@@ -92,7 +92,7 @@ public class JiraService {
                 log.info("Comment is addressed to ai-junior-developer");
                 String threadId = threadIdFieldValue.toString();
                 llmService.continueAThread(threadId);
-                var result = llmService.executePrompt(jiraWebhookEvent.getComment().getBody(), threadId);
+                var result = llmService.executeLlmPrompt(jiraWebhookEvent.getComment().getBody(), threadId);
                 addComment(issueKey, result);
             }
         }

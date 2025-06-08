@@ -12,18 +12,29 @@ import java.util.List;
 @Component
 public class ResponsesTracker {
     private final Map<String, List<ResponsesThreadTracker>> responsesThreadTrakerMap = new HashMap<>();
+    private final List <String> threadIdList = new ArrayList<>();
 
     public synchronized void addAThread(String threadId) {
         responsesThreadTrakerMap.computeIfAbsent(threadId, k -> new ArrayList<>());
+        threadIdList.add(threadId);
     }
 
     public synchronized void track(String threadId, String runId, String responsesId) {
-        var responsesThreadTracker = responsesThreadTrakerMap.get(threadId).stream()
-            .filter(rtt -> rtt.getRunId().equals(runId)).findFirst()
-            .orElseGet(() -> ResponsesThreadTracker.builder()
-                .build());
+        List<ResponsesThreadTracker> trackers =
+                responsesThreadTrakerMap.computeIfAbsent(threadId, k -> new ArrayList<>());
+        threadIdList.add(threadId);
+        ResponsesThreadTracker tracker = trackers.stream()
+                .filter(t -> runId.equals(t.getRunId()))
+                .findFirst()
+                .orElseGet(() -> {
+                    ResponsesThreadTracker t = ResponsesThreadTracker.builder()
+                            .runId(runId)
+                            .build();
+                    trackers.add(t);
+                    return t;
+                });
 
-        responsesThreadTracker.getResponsesIds().add(responsesId);
+        tracker.getResponsesIds().add(responsesId);
     }
 
     public synchronized String getLastTrackedResponseId(String threadId) {
@@ -38,6 +49,14 @@ public class ResponsesTracker {
 
     public List<ResponsesThreadTracker> getThreadDetails(String threadId) {
         return responsesThreadTrakerMap.get(threadId);
+    }
+
+    public Boolean isEmptyThreadList() {
+        return threadIdList.isEmpty();
+    }
+
+    public String getLastThreadId() {
+        return threadIdList.getLast();
     }
 
     @Value

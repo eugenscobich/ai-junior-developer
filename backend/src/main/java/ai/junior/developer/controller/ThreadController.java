@@ -31,7 +31,7 @@ public class ThreadController {
     private final ApplicationPropertiesConfig config;
 
     @GetMapping("/api/threads")
-    public ResponseEntity<ThreadsResponse> getThreads() {
+    public ResponseEntity<ThreadsResponse> getThreads() throws Exception {
         ThreadsResponse tracked = threadService.getThreads();
         return ResponseEntity.ok(tracked);
     }

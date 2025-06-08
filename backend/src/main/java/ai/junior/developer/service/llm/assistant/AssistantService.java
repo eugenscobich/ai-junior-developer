@@ -8,9 +8,7 @@ import static ai.junior.developer.service.llm.assistant.AssistantContent.ASSISTA
 import static com.openai.models.beta.threads.messages.Message.Role.Value.ASSISTANT;
 
 import ai.junior.developer.service.llm.LlmService;
-import ai.junior.developer.service.model.MessageResponse;
-import ai.junior.developer.service.model.MessagesResponse;
-import ai.junior.developer.service.model.UserOrAssistantMessageResponse;
+import ai.junior.developer.service.model.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openai.client.OpenAIClient;
@@ -301,17 +299,10 @@ public class AssistantService implements LlmService {
 
     @Override
     @SneakyThrows
-    public String executePrompt(String prompt, String threadId) {
+    public String executeLlmPrompt(String prompt, String threadId) {
         var assistantId = threadTracker.findAssistantId(threadId);
         Map<String, String> result = executePrompt(prompt, assistantId, threadId);
-        var runId = result.get("runId");
-        runIdTracker.track(runId, prompt);
         return result.get("assistantMessage");
-    }
-
-    @Override
-    public void getLastThreadId() {
-
     }
 
     @Override
@@ -364,5 +355,32 @@ public class AssistantService implements LlmService {
         return MessagesResponse.builder()
             .messagesList(new ArrayList<>(groupedMessages.values()))
             .build();
+    }
+
+    @Override
+    public Map<String, String> sendPromptToExistingThread(PromptRequest request) {
+        MDC.put("assistantId", request.getAssistantId());
+        MDC.put("threadId", request.getThreadId());
+        String assistantMessage = executeLlmPrompt(request.getPrompt(), request.getThreadId());
+        Optional<String> runId = runIdTracker.getAllTrackedRunId().keySet().stream().reduce((first, second) -> second);
+        return Map.of(
+                "runId", runId.get(),
+                "assistantMessage", assistantMessage
+        );
+    }
+
+    @Override
+    public ThreadsResponse getLastThread() {
+        Map<String, List<String>> activeThread = threadTracker.getAllTracked();
+        System.out.println("activeThread " + activeThread);
+        ThreadsResponse tracked = activeThread.entrySet().stream()
+                .filter(entry -> !entry.getValue().isEmpty())
+                .map(entry -> ThreadsResponse.builder()
+                        .assistantId(entry.getKey())
+                        .threadId(entry.getValue().get(0))
+                        .build())
+                .findFirst().get();
+
+        return tracked;
     }
 }

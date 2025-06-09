@@ -2,6 +2,7 @@ package ai.junior.developer.service.llm;
 
 import ai.junior.developer.service.model.MessagesResponse;
 import ai.junior.developer.service.model.PromptRequest;
+import ai.junior.developer.service.model.ThreadsListModel;
 import ai.junior.developer.service.model.ThreadsResponse;
 
 import java.io.IOException;
@@ -20,4 +21,6 @@ public interface LlmService {
     Map<String, String>  sendPromptToExistingThread(PromptRequest request);
 
     ThreadsResponse getLastThread();
+
+    ThreadsListModel getAllThreads();
 }

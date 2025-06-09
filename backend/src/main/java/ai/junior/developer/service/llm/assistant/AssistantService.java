@@ -383,4 +383,12 @@ public class AssistantService implements LlmService {
 
         return tracked;
     }
+
+    @Override
+    public ThreadsListModel getAllThreads() {
+        var treads = threadTracker.getAllTracked().values().stream().flatMap(List::stream).toList();
+        return ThreadsListModel.builder()
+                .threadList(treads)
+                .build();
+    }
 }

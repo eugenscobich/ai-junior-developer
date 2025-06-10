@@ -52,8 +52,12 @@ function RedirectToThread() {
     const handleInputChange = (event) => setInputValue(event.target.value);
 
     const handleSend = async () => {
+        if (loading) return;
         if (!inputValue.trim()) return;
+
         setLoading(true);
+        setInputValue("");
+
         try {
             const res = await fetch(`${API_BASE}/api/start/thread`, {
                 method: "POST",
@@ -109,6 +113,7 @@ function RedirectToThread() {
                 onInputChange={handleInputChange}
                 onSend={handleSend}
                 onKeyDown={handleKeyDown}
+                disabled={loading}
             />
             <div className="loading-text" style={{marginTop: "0"}}>
                 {threads.length > 0 ? (

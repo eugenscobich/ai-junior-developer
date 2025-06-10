@@ -1,5 +1,5 @@
 import {useEffect, useState, useMemo} from "react";
-import {useParams} from "react-router-dom";
+import {Link, useParams} from "react-router-dom";
 import {API_BASE, getBasicAuthHeader} from "./config";
 import logo from "./assets/logo.png";
 import Message from "./components/Message";
@@ -97,7 +97,9 @@ function App() {
     return (
         <div className="chat-container">
             <div className="logo-container">
-                <img className="logo" alt="logo" src={logo}/>
+                <Link to={`/`}>
+                    <img className="logo" alt="logo" src={logo}/>
+                </Link>
             </div>
 
             <div className="messages">

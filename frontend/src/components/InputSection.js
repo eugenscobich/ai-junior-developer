@@ -1,4 +1,4 @@
-function InputSection({inputValue, onInputChange, onSend, onKeyDown,}) {
+function InputSection({inputValue, onInputChange, onSend, onKeyDown, disabled=false}) {
     return (
         <div className="input-section">
             <div className="triangle-wrapper">
@@ -10,6 +10,7 @@ function InputSection({inputValue, onInputChange, onSend, onKeyDown,}) {
                 value={inputValue}
                 onChange={onInputChange}
                 onKeyDown={onKeyDown}
+                disabled={disabled}
             ></textarea>
         </div>
     );

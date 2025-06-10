@@ -21,6 +21,8 @@ service:
     api-token: change-me
     webhook-secret: change-me
     user-id: 210500703
+  ollama:
+    base-url: http://localhost:11434
   llm:
     type: responses
 

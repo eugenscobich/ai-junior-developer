@@ -1,8 +1,8 @@
 package ai.junior.developer.service.llm.responses;
 
+import static ai.junior.developer.service.llm.assistant.AssistantContent.ASSISTANT_FUNCTIONS;
 import static ai.junior.developer.service.llm.assistant.AssistantContent.ASSISTANT_INSTRUCTIONS;
 import static ai.junior.developer.service.llm.assistant.AssistantContent.ASSISTANT_MODEL;
-import static ai.junior.developer.service.llm.assistant.AssistantContent.RESPONSES_FUNCTIONS;
 
 import ai.junior.developer.service.llm.LlmService;
 import ai.junior.developer.service.llm.assistant.RunIdTracker;
@@ -365,7 +365,7 @@ public class ResponsesService implements LlmService {
     @SneakyThrows
     private List<Tool> getToolDefinitions() {
         var functionsDefinitions = objectMapper.readValue(
-                RESPONSES_FUNCTIONS,
+                ASSISTANT_FUNCTIONS,
                 new TypeReference<List<Map<String, Object>>>() {
                 }
         );

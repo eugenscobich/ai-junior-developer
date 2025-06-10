@@ -81,11 +81,12 @@ public class GitService {
     }
 
     public void createBranch(String branchName, String threadId) throws IOException, GitAPIException {
+        var normalizedBranchName = branchName.replaceAll("[^a-zA-Z0-9-_]", "-");
         var workspacePath = workspaceService.getWorkspacePath(threadId);
         try (Git git = Git.open(workspacePath.toFile())) {
             git.checkout()
                 .setCreateBranch(true)
-                .setName(branchName)
+                .setName(normalizedBranchName)
                 .call();
             log.info("Create branch: {}", branchName);
         }

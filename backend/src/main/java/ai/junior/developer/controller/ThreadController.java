@@ -4,9 +4,7 @@ import ai.junior.developer.service.llm.assistant.RunIdTracker;
 import ai.junior.developer.config.ApplicationPropertiesConfig;
 import ai.junior.developer.log.LogbackAppender;
 import ai.junior.developer.service.ThreadService;
-import ai.junior.developer.service.model.MessagesResponse;
-import ai.junior.developer.service.model.PromptRequest;
-import ai.junior.developer.service.model.ThreadsResponse;
+import ai.junior.developer.service.model.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -31,8 +29,14 @@ public class ThreadController {
     private final ApplicationPropertiesConfig config;
 
     @GetMapping("/api/threads")
-    public ResponseEntity<ThreadsResponse> getThreads() throws Exception {
+    public ResponseEntity<ThreadsResponse> getThreads() {
         ThreadsResponse tracked = threadService.getThreads();
+        return ResponseEntity.ok(tracked);
+    }
+
+    @GetMapping("/api/allthreads")
+    public ResponseEntity<ThreadsListModel> getAllThreads() {
+        ThreadsListModel tracked = threadService.getAllThreads();
         return ResponseEntity.ok(tracked);
     }
 
@@ -60,6 +64,12 @@ public class ThreadController {
     public ResponseEntity<Map<String, String>> sendPromptToExistingThread(@RequestBody PromptRequest request) throws Exception {
         Map<String, String> response;
         response = threadService.sendPromptToExistingThread(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/api/start/thread")
+    public ResponseEntity<String> startThread(@RequestBody ThreadStartModel request) throws Exception {
+        var response = threadService.startThread(request);
         return ResponseEntity.ok(response);
     }
 }

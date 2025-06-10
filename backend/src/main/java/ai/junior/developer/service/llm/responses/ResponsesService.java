@@ -159,6 +159,14 @@ public class ResponsesService implements LlmService {
                 .build();
     }
 
+    @Override
+    public ThreadsListModel getAllThreads() {
+        var threads = responsesTracker.getThreads();
+        return ThreadsListModel.builder()
+                .threadList(threads)
+                .build();
+    }
+
     public ResponsesByRoleModel getInputListMessages(String responseId) throws IOException {
         InputItemListPage page = client.responses()
                 .inputItems()

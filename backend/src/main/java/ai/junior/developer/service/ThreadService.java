@@ -31,11 +31,21 @@ public class ThreadService {
         return llmService.getLastThread();
     }
 
+    public ThreadsListModel getAllThreads() {
+        return llmService.getAllThreads();
+    }
+
     public MessagesResponse getMessages(String threadId) throws IOException {
         return llmService.getThreadMessages(threadId);
     }
 
     public Map<String, String> sendPromptToExistingThread(PromptRequest request) throws Exception {
         return llmService.sendPromptToExistingThread(request);
+    }
+
+    public String startThread(ThreadStartModel promptStart) {
+        var threadId = llmService.startAThread();
+        llmService.executeLlmPrompt(promptStart.getPrompt(), threadId);
+        return threadId;
     }
 }

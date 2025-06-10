@@ -2,6 +2,7 @@ package ai.junior.developer.service.llm.responses;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import lombok.Builder;
 import lombok.Value;
 import org.springframework.stereotype.Component;
@@ -12,7 +13,7 @@ import java.util.List;
 @Component
 public class ResponsesTracker {
     private final Map<String, List<ResponsesThreadTracker>> responsesThreadTrakerMap = new HashMap<>();
-    private final List <String> threadIdList = new ArrayList<>();
+    private final List<String> threadIdList = new ArrayList<>();
 
     public synchronized void addAThread(String threadId) {
         responsesThreadTrakerMap.computeIfAbsent(threadId, k -> new ArrayList<>());
@@ -43,7 +44,7 @@ public class ResponsesTracker {
             return null;
         } else {
             return responsesThreadTrackers.getLast().getResponsesIds().isEmpty() ?
-                null : responsesThreadTrackers.getLast().getResponsesIds().getLast();
+                    null : responsesThreadTrackers.getLast().getResponsesIds().getLast();
         }
     }
 
@@ -57,6 +58,10 @@ public class ResponsesTracker {
 
     public String getLastThreadId() {
         return threadIdList.getLast();
+    }
+
+    public List<String> getThreads() {
+        return threadIdList;
     }
 
     @Value

@@ -8,6 +8,7 @@ import ai.junior.developer.service.llm.assistant.RunIdTracker;
 import ai.junior.developer.service.llm.assistant.ToolDispatcher;
 import ai.junior.developer.service.model.MessagesResponse;
 import ai.junior.developer.service.model.PromptRequest;
+import ai.junior.developer.service.model.ThreadsListModel;
 import ai.junior.developer.service.model.ThreadsResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -203,6 +204,11 @@ public class DevstralService implements LlmService {
 
     @Override
     public ThreadsResponse getLastThread() {
+        return null;
+    }
+
+    @Override
+    public ThreadsListModel getAllThreads() {
         return null;
     }
 }

@@ -9,6 +9,7 @@ import ai.junior.developer.service.llm.assistant.ToolDispatcher;
 import ai.junior.developer.service.llm.devstral.ChatTracker;
 import ai.junior.developer.service.model.MessagesResponse;
 import ai.junior.developer.service.model.PromptRequest;
+import ai.junior.developer.service.model.ThreadsListModel;
 import ai.junior.developer.service.model.ThreadsResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -236,7 +237,10 @@ public class DeepseekService implements LlmService {
         return null;
     }
 
-
+    @Override
+    public ThreadsListModel getAllThreads() {
+        return null;
+    }
 
     public static void main(String[] args) {
         String str = """

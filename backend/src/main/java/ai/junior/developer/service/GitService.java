@@ -50,7 +50,7 @@ public class GitService {
         var workspacePath = workspaceService.getWorkspacePath(threadId);
         try (Git git = Git.open(workspacePath.toFile())) {
             git.add().addFilepattern(pattern == null ? "." : pattern).call();
-            log.info("Add to git staging: {}", pattern);
+            //log.info("Add to git staging: {}", pattern);
         }
     }
 

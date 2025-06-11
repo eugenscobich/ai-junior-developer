@@ -152,7 +152,6 @@ public class ResponsesService implements LlmService {
     @Override
     public ThreadsResponse getLastThread() {
         var activeThread = responsesTracker.getLastThreadId();
-        System.out.println("activeThread responses " + activeThread);
         return ThreadsResponse.builder()
                 .assistantId("assistant")
                 .threadId(activeThread)
@@ -236,7 +235,6 @@ public class ResponsesService implements LlmService {
                         .responseId(responseId)
                         .build());
         log.info("getOutputListMessages: " + outputResponse.output());
-        List<ResponseOutputItem> outputItems = outputResponse.output();
         List<ResponsesItemModel> outputMessages = new ArrayList<>();
         for (ResponseOutputItem item : outputResponse.output()) {
             if (item.isMessage()) {

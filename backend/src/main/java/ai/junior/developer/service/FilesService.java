@@ -56,7 +56,7 @@ public class FilesService {
         }
     }
 
-    public void writeFile(String filePathStr, String fileContent, String threadId) throws IOException {
+    public void writeFile(String filePathStr, String fileContent, String threadId) throws IOException, GitAPIException {
         Path workspacePath = workspaceService.getWorkspacePath(threadId);
         var filePath = workspacePath.resolve(filePathStr);
 
@@ -68,12 +68,13 @@ public class FilesService {
             }
             //log.info("File does not exist, create it");
             Files.createFile(filePath);
+            gitService.addFiles(filePathStr, threadId);
         }
         Files.writeString(filePath, fileContent);
         log.info("Write file: {}", filePathStr);
     }
 
-    public void replaceInFile(String filePathStr, String from, String to, String threadId) throws IOException {
+    public void replaceInFile(String filePathStr, String from, String to, String threadId) throws IOException, GitAPIException {
         Path workspacePath = workspaceService.getWorkspacePath(threadId);
         var filePath = workspacePath.resolve(filePathStr);
 
@@ -88,6 +89,7 @@ public class FilesService {
                     throw new AiJuniorDeveloperException("Replace in file filed. From '" + from + "' does not exist.");
                 }
                 log.info("Patch file: {}\nFrom:\n{}\nTo:\n{}", filePathStr, from, to);
+                gitService.addFiles(filePathStr, threadId);
             } else {
                 throw new AiJuniorDeveloperException("Requested file path is a directory. Use listFiles to find the right file path");
             }

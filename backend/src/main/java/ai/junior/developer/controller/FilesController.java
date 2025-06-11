@@ -61,7 +61,7 @@ public class FilesController {
         @Parameter(name = "filePath", description = "File path to create and write/override the content") @RequestParam("filePath") String filePath,
         @Parameter(name = "fileContent", description = "File content to save") @RequestParam("fileContent") String fileContent,
         @Parameter(name = "threadId", description = "OpenAI Assistant Thread Id") @RequestParam String threadId
-    ) throws IOException {
+    ) throws IOException, GitAPIException {
         filesService.writeFile(filePath, fileContent, threadId);
     }
 
@@ -157,7 +157,7 @@ public class FilesController {
         @Parameter(name = "to", description = "String that will be replaced with")
         @RequestParam("to") String to,
         @Parameter(name = "threadId", description = "OpenAI Assistant Thread Id") @RequestParam String threadId
-    ) throws IOException {
+    ) throws IOException, GitAPIException {
         filesService.replaceInFile(filePath, from, to, threadId);
     }
 }

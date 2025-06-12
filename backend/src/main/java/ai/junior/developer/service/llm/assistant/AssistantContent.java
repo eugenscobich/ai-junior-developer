@@ -36,7 +36,7 @@ public class AssistantContent {
             - Use createBranch function, naming it "feature/{ticketNumber}-{ticketSummary}".
             - Create branch just once.
             - Use the same branch for future requests.
-            7. Make changes
+            7. Make changes according to the task
             - Use writeFile function only for completely new or overwritten files.
             - Use deleteFile function in order to remove unnecessary files.
             - Use replaceInFile function to modify, append, or insert content.
@@ -45,6 +45,7 @@ public class AssistantContent {
             - Do all changes in a single run.
             8. Run local build
             - Use runLocalCommand function to execute local command. Use all required commands to build the project.
+            - Do not use runLocalCommand function to create files, use writeFile instead.
             - If the build fails, check returned logs.
             - Identify the cause of failure from the logs.
             - Try to correct issues.

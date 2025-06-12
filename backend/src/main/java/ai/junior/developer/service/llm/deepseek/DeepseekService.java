@@ -200,7 +200,7 @@ public class DeepseekService implements LlmService {
             functionDefinition.put("function_name", functionName);
             functionDefinition.put("parameters", params);
             log.info("Parsed function definition: {}", functionDefinition);
-            return objectMapper.convertValue(functionDefinition, new TypeReference<Map<String, Object>>() {});
+            return functionDefinition;
         } catch (Exception e) {
             log.warn("Could not parse xml function definition", e);
         }

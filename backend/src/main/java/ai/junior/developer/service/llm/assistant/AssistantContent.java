@@ -46,7 +46,7 @@ public class AssistantContent {
             - Do all changes in a single run.
             8. Run local build
             - Use runLocalCommand function to execute local command. Use all required commands to build the project.
-            - Do not use runLocalCommand function to create files, use writeFile instead.
+            - Do not use runLocalCommand function to create, move or delete files, use writeFile, deleteFile(s) instead.
             - If the build fails, check returned logs.
             - Identify the cause of failure from the logs.
             - Try to correct issues.

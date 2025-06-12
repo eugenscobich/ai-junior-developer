@@ -200,26 +200,17 @@ public class DeepseekService implements LlmService {
             If you choose to call a function ONLY reply in the following format with NO suffix:
             
             <function name="example_function_name">
-                <parameter name="example_parameter_1">
-                    <![CDATA[
-                        value_1
-                    ]]>
-                </parameter>
-                <parameter name="example_parameter_2">
-                    <![CDATA[
-                       This is the value for the second parameter
-                       that can span
-                       multiple lines
-                    ]]>
-                </parameter>
+                <parameter name="example_parameter_1">value_1</parameter>
+                <parameter name="example_parameter_2">This is the value for the second parameter\nthat can span\nmultiple lines</parameter>
             </function>
             
             Reminder:
             - Function calls MUST follow the specified format, start with <function and end with </function>
             - Required parameters MUST be specified
-            - Only call one function at a time
+            - Only call ONE function at a time. Do not call multiple functions in a single response.
             - You may provide optional reasoning for your function call in natural language BEFORE the function call, but NOT after.
-            - If there is no function call available, answer the question like normal with your current knowledge and do not tell the user about function calls
+            - If there is no function call available, answer the question like normal with your current knowledge and do not tell the user about function calls.
+            - Format function call parameters as XML, with each parameter wrapped in <parameter> tags.
             
             Here's a running example of how to perform a task with the provided tools.
             
@@ -230,11 +221,7 @@ public class DeepseekService implements LlmService {
             ASSISTANT: Sure! Let me first check the current directory:
             
             <function name="runLocalCommand">
-                <parameter name="command">
-                    <![CDATA[
-                        pwd && ls
-                    ]]>
-                </parameter>
+                <parameter name="command">pwd && ls</parameter>
             </function>
             
             USER: EXECUTION RESULT of [runLocalCommand]:

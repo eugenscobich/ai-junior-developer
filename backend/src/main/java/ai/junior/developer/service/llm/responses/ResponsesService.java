@@ -3,6 +3,7 @@ package ai.junior.developer.service.llm.responses;
 import static ai.junior.developer.service.llm.assistant.AssistantContent.ASSISTANT_FUNCTIONS;
 import static ai.junior.developer.service.llm.assistant.AssistantContent.ASSISTANT_INSTRUCTIONS;
 import static ai.junior.developer.service.llm.assistant.AssistantContent.ASSISTANT_MODEL;
+import static ai.junior.developer.service.llm.assistant.AssistantContent.ASSISTANT_TEMPERATURE;
 
 import ai.junior.developer.service.llm.LlmService;
 import ai.junior.developer.service.llm.assistant.RunIdTracker;
@@ -71,6 +72,7 @@ public class ResponsesService implements LlmService {
                     ResponseCreateParams.builder()
                             .model(ASSISTANT_MODEL)
                             .instructions(ASSISTANT_INSTRUCTIONS)
+                            .temperature(ASSISTANT_TEMPERATURE)
                             .tools(toolDefinitions)
                             .input(ResponseCreateParams.Input.ofText(prompt))
                             .metadata(metadata)
@@ -84,6 +86,7 @@ public class ResponsesService implements LlmService {
                     ResponseCreateParams.builder()
                             .model(ASSISTANT_MODEL)
                             .instructions(ASSISTANT_INSTRUCTIONS)
+                            .temperature(ASSISTANT_TEMPERATURE)
                             .tools(toolDefinitions)
                             .previousResponseId(previousResponsesId)
                             .input(ResponseCreateParams.Input.ofText(prompt))
@@ -341,6 +344,7 @@ public class ResponsesService implements LlmService {
                     ResponseCreateParams.builder()
                             .model(ASSISTANT_MODEL)
                             .instructions(ASSISTANT_INSTRUCTIONS)
+                            .temperature(ASSISTANT_TEMPERATURE)
                             .tools(toolDefinitions)
                             .previousResponseId(response.id())
                             .input(ResponseCreateParams.Input.ofResponse(followUpInputs))

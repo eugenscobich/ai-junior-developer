@@ -6,6 +6,7 @@ public class AssistantContent {
     public final static String ASSISTANT_NAME = "AI Junior Developer";
     public final static String ASSISTANT_DESCRIPTION =
         "Assistant for professional software developers that is able to read and modify your files and perform tasks.";
+    public final static double ASSISTANT_TEMPERATURE = 0.8;
     public final static String ASSISTANT_INSTRUCTIONS =
         """
             Tool name: AI Junior Developer.

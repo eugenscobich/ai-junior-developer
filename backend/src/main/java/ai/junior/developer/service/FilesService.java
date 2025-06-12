@@ -2,6 +2,7 @@ package ai.junior.developer.service;
 
 import ai.junior.developer.config.ApplicationPropertiesConfig;
 import ai.junior.developer.exception.AiJuniorDeveloperException;
+import ai.junior.developer.utils.DeleteNonEmptyDirectory;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -109,10 +110,15 @@ public class FilesService {
     public void deleteFile(String filePathStr, String threadId) throws IOException, GitAPIException {
         Path workspacePath = workspaceService.getWorkspacePath(threadId);
         var filePath = workspacePath.resolve(filePathStr);
-        Files.delete(filePath);
-
-        gitService.deleteAFile(filePathStr, threadId);
-
+        if (Files.exists(filePath)) {
+            if (Files.isDirectory(filePath)) {
+                DeleteNonEmptyDirectory deleter = new DeleteNonEmptyDirectory();
+                Files.walkFileTree(filePath, deleter);
+            } else {
+                Files.delete(filePath);
+            }
+            gitService.deleteAFile(filePathStr, threadId);
+        }
         log.info("File {} is deleted", filePathStr);
     }
 

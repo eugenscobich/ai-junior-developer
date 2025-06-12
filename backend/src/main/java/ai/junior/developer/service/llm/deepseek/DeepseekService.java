@@ -23,6 +23,7 @@ import io.github.ollama4j.models.chat.OllamaChatRequestBuilder;
 import io.github.ollama4j.models.chat.OllamaChatResult;
 import io.github.ollama4j.tools.Tools.ToolSpecification;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -44,6 +45,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
 @Slf4j
 @Service
@@ -152,11 +154,25 @@ public class DeepseekService implements LlmService {
         return content;
     }
 
+    public static void main(String[] args) {
+        String xml = """
+            <function name="cloneRepository">
+                <parameter name="repoUrl">git@github.com-eugenscobich:eugenscobich/ai-demo-project.git</parameter>
+            </function>
+            """;
+        try {
+            DeepseekService service = new DeepseekService(null, null, null, null, null);
+            Map<String, Object> result = service.parseXml(xml);
+            System.out.println(result);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
     public Map<String, Object> parseXml(String xml) throws IOException {
         try {
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-            Document doc = dBuilder.parse(xml);
+            Document doc = dBuilder.parse(new InputSource(new StringReader(xml)));
 
             doc.getDocumentElement().normalize();
 
@@ -186,7 +202,7 @@ public class DeepseekService implements LlmService {
             log.info("Parsed function definition: {}", functionDefinition);
             return objectMapper.convertValue(functionDefinition, new TypeReference<Map<String, Object>>() {});
         } catch (Exception e) {
-            log.warn("Could not parse xml function definition");
+            log.warn("Could not parse xml function definition", e);
         }
         return null;
     }
@@ -277,30 +293,6 @@ public class DeepseekService implements LlmService {
     public ThreadsListModel getAllThreads() {
         return null;
     }
-
-    public static void main(String[] args) {
-        String str = """
-        
-        {
-            "function_name": "cloneRepository",
-            "parameters": {
-                "repoUrl": "git@github.com-eugenscobich:eugenscobich/ai-demo-project.git"
-            }
-        }
-        
-        Cloning repository: git@github.com-eugenscobich:eugenscobich/ai-demo-project.git
-        """;
-        int startIndex = str.indexOf("{");
-        int endIndex = str.lastIndexOf("}");
-        if (startIndex != -1 && endIndex != -1 && startIndex < endIndex) {
-            String jsonString = str.substring(startIndex, endIndex + 1);
-            System.out.println("Extracted JSON: " + jsonString);
-        } else {
-            System.out.println("No valid JSON found in the text.");
-        }
-
-    }
-
 
 
     static List<String> extractJson(String text) {

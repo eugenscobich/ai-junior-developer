@@ -2,6 +2,7 @@ package ai.junior.developer.service.llm.deepseek;
 
 import static ai.junior.developer.service.llm.assistant.AssistantContent.ASSISTANT_FUNCTIONS;
 import static ai.junior.developer.service.llm.assistant.AssistantContent.ASSISTANT_INSTRUCTIONS;
+import static java.util.stream.Collectors.toCollection;
 
 import ai.junior.developer.service.llm.LlmService;
 import ai.junior.developer.service.llm.assistant.RunIdTracker;
@@ -17,6 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.ollama4j.OllamaAPI;
 import io.github.ollama4j.exceptions.OllamaBaseException;
 import io.github.ollama4j.exceptions.ToolInvocationException;
+import io.github.ollama4j.models.chat.OllamaChatMessage;
 import io.github.ollama4j.models.chat.OllamaChatMessageRole;
 import io.github.ollama4j.models.chat.OllamaChatRequest;
 import io.github.ollama4j.models.chat.OllamaChatRequestBuilder;
@@ -89,7 +91,10 @@ public class DeepseekService implements LlmService {
         String toolSpecification = computeToolSpecifications(threadId);
 
         String initialPrompt = ASSISTANT_INSTRUCTIONS + toolSpecification;
+        log.info("======================== System Prompt ================================");
         log.info(initialPrompt);
+        log.info("=======================================================================");
+
         OllamaChatRequest requestModel = builder
             .withMessage(
                 OllamaChatMessageRole.SYSTEM,
@@ -122,52 +127,52 @@ public class DeepseekService implements LlmService {
         }
         //log.info("Content: {}", content);
 
-        int startIndex = content.indexOf("<function name=\"");
-        int endIndex = content.lastIndexOf("</function>");
-        if (startIndex != -1 && endIndex != -1 && startIndex < endIndex) {
-            String functionDefinition = content.substring(startIndex, endIndex + 11);
-            log.info("Found functions call");
-            log.info("Call function definition: {}", functionDefinition);
+        List<String> functions = extractFunctionXmlFragments(content);
 
-            Map<String, Object> stringObjectMap = parseXml(functionDefinition);
-            Entry<String, Object> stringObjectEntry = stringObjectMap.entrySet().stream().findFirst().orElseThrow();
-            String functionName = stringObjectEntry.getKey();
-            String paramJson = objectMapper.writeValueAsString(stringObjectEntry.getValue());
+        if (!functions.isEmpty()) {
+            List<OllamaChatMessage> toolsResult = chatResult.getChatHistory();
 
-            String toolOutput = toolDispatcher.handleToolCall(functionName, paramJson, threadId);
+            for (String function : functions) {
+                log.info("Found function call: {}", function);
+                Map<String, Object> stringObjectMap = parseXml(function);
+                if (stringObjectMap == null) {
+                    log.warn("Could not parse function call: {}", function);
+                    continue;
+                }
+                String functionName = stringObjectMap.get("function_name").toString();
+                String paramJson = objectMapper.writeValueAsString(stringObjectMap.get("parameters"));
+                log.info("Call function: {}, with params: {}", functionName, paramJson);
+
+                String toolOutput = toolDispatcher.handleToolCall(functionName, paramJson, threadId);
+
+
+                toolsResult.add(new OllamaChatMessage(OllamaChatMessageRole.TOOL,
+                    functionName + " result is: " + toolOutput));
+            }
 
             OllamaChatRequestBuilder builder = OllamaChatRequestBuilder.getInstance(MODEL_NAME);
-
+            var filteredChatHistory = chatResult.getChatHistory()
+                .stream()
+                .map(chatResult1 -> {
+                    chatResult1.setContent(
+                        chatResult1.getContent()
+                            .replaceAll("<think>.*?</think>", "")
+                    );
+                    return chatResult1;
+                })
+                .collect(toCollection(ArrayList::new));
             OllamaChatRequest requestModel = builder
-                .withMessages(chatResult.getChatHistory())
-                .withMessage(
-                    OllamaChatMessageRole.USER,
-                    toolOutput
-                )
+                .withMessages(filteredChatHistory)
                 .build();
 
             OllamaChatResult chatResult2 = ollamaApi.chat(requestModel);
 
             content = content + handleChatResult(chatResult2, threadId);
         }
-
+        log.info("Final content: {}", content);
         return content;
     }
 
-    public static void main(String[] args) {
-        String xml = """
-            <function name="cloneRepository">
-                <parameter name="repoUrl">git@github.com-eugenscobich:eugenscobich/ai-demo-project.git</parameter>
-            </function>
-            """;
-        try {
-            DeepseekService service = new DeepseekService(null, null, null, null, null);
-            Map<String, Object> result = service.parseXml(xml);
-            System.out.println(result);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
     public Map<String, Object> parseXml(String xml) throws IOException {
         try {
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -217,22 +222,26 @@ public class DeepseekService implements LlmService {
             
             <function name="example_function_name">
                 <parameter name="example_parameter_1">value_1</parameter>
-                <parameter name="example_parameter_2">This is the value for the second parameter\nthat can span\nmultiple lines</parameter>
+                <parameter name="example_parameter_2">
+                    This is the value for the second parameter
+                    that can span
+                    multiple lines
+                </parameter>
             </function>
             
-            Reminder:
+            IMPORTANT:
             - Function calls MUST follow the specified format, start with <function and end with </function>
             - Required parameters MUST be specified
-            - Only call ONE function at a time. Do not call multiple functions in a single response.
+            - Only call ONE function at a time. Do not call multiple functions in a single response!
             - You may provide optional reasoning for your function call in natural language BEFORE the function call, but NOT after.
             - If there is no function call available, answer the question like normal with your current knowledge and do not tell the user about function calls.
-            - Format function call parameters as XML, with each parameter wrapped in <parameter> tags.
+            - Format function call parameters as XML.
             
             Here's a running example of how to perform a task with the provided tools.
             
             --------------------- START OF EXAMPLE ---------------------
             
-            USER: Create a list of numbers from 1 to 10, and display them in a web page at port 5000.
+            USER: Create a new file named "example.txt" with the content "Hello, World!" in the workspace directory
 
             ASSISTANT: Sure! Let me first check the current directory:
             
@@ -240,10 +249,18 @@ public class DeepseekService implements LlmService {
                 <parameter name="command">pwd && ls</parameter>
             </function>
             
-            USER: EXECUTION RESULT of [runLocalCommand]:
+            USER:
             /workspace
             openhands@runtime:~/workspace$
-
+            
+            ASSISTANT: Now let's create the file "example.txt" with the content "Hello, World!" in the workspace directory.:
+            
+            <function name="writeFile">
+                <parameter name="filePath">example.txt</parameter>
+                <parameter name="fileContent">Hello, World!</parameter>
+            </function>
+            
+            USER: File written successfully.
             """);
 
         return stringBuilder.toString();
@@ -324,6 +341,31 @@ public class DeepseekService implements LlmService {
             }
         }
         return out;
+    }
+
+    public List<String> extractFunctionXmlFragments(String text) {
+        List<String> fragments = new ArrayList<>();
+        Pattern pattern = Pattern.compile(
+            "<function\\b[^>]*>.*?</function>",
+            Pattern.DOTALL | Pattern.CASE_INSENSITIVE
+        );
+        Matcher matcher = pattern.matcher(text);
+        while (matcher.find()) {
+            fragments.add(matcher.group());
+        }
+        return fragments;
+    }
+
+    public static void main(String[] args) {
+        String xml = """
+            hi there, I am a test function call
+            
+            """;
+
+        DeepseekService service = new DeepseekService(null, null, null, null, null);
+        List<String> result = service.extractFunctionXmlFragments(xml);
+        System.out.println(result);
+
     }
 
 }

@@ -48,7 +48,7 @@ public class ToolDispatcher {
                     String filePath = (String) args.get("filePath");
                     String content = (String) args.get("fileContent");
                     filesService.writeFile(filePath, content, threadId);
-                    yield "File written successfully: " + filePath + ".";
+                    yield "File written successfully.";
                 }
 
                 case "replaceInFile" -> {
@@ -56,17 +56,17 @@ public class ToolDispatcher {
                     String from = (String) args.get("from");
                     String to = (String) args.get("to");
                     filesService.replaceInFile(filePath, from, to, threadId);
-                    yield "File content replaced successfully: " + filePath + ".";
+                    yield "File content replaced successfully.";
                 }
 
                 case "cloneRepository" -> {
                     gitService.cloneRepository((String) args.get("repoUrl"), threadId);
-                    yield "Repository cloned: " + args.get("repoUrl") + ".";
+                    yield "Repository cloned successfully.";
                 }
 
                 case "createBranch" -> {
                     gitService.createBranch((String) args.get("branchName"), threadId);
-                    yield "Branch created: " + args.get("branchName") + ".";
+                    yield "Branch created successfully.";
                 }
 
                 case "reset" -> {

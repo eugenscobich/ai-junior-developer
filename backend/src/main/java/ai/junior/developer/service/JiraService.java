@@ -100,8 +100,7 @@ public class JiraService {
 
     public static String getReplayCommentBody(String assistantId, String threadId) {
         return "Task was assigned to AI Junior Developer.\n"
-            + "Links:\n[AI Junior Developer Console](https://jknights.serveo.net/" + threadId + "/messages)\n"
-            + "\n[AI Junior Developer Console backup](https://jknights.eugenscobich.com/" + threadId + "/messages)\n"
+            + "Links:\n[AI Junior Developer Console](https://jknights.eugenscobich.com/" + threadId + "/messages)\n"
             + "[OpenAI Platform](https://platform.openai.com/playground/assistants?assistant=" + assistantId + "&thread=" + threadId + ")\n";
     }
 
